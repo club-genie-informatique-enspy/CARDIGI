@@ -138,7 +138,8 @@ export default function CreateMemberPage() {
                                 <Label htmlFor="filiere">Filière</Label>
                                 <Select
                                     name="filiere"
-                                    onValueChange={(val:any) => handleSelectChange('filiere', val)}
+                                    value={formData.filiere}
+                                    onValueChange={(val: any) => handleSelectChange('filiere', val)}
                                     required
                                 >
                                     <SelectTrigger>
@@ -155,7 +156,8 @@ export default function CreateMemberPage() {
                                 <Label htmlFor="niveau">Niveau</Label>
                                 <Select
                                     name="niveau"
-                                    onValueChange={(val:any) => handleSelectChange('niveau', val)}
+                                    value={formData.niveau}
+                                    onValueChange={(val: any) => handleSelectChange('niveau', val)}
                                     required
                                 >
                                     <SelectTrigger>
