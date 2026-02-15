@@ -12,10 +12,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import type { Member } from '@/types/member';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CardPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
 
   // NOTE: Utilisez le nom exact du dossier dynamique de votre route (ex: [id] ou [memberId])
   const memberId = params.id as string;
