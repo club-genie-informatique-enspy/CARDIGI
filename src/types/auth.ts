@@ -11,6 +11,7 @@ export interface User {
   numero_membre?: string; // Optionnel
   photo_url?: string;     // Optionnel
   role: 'member' | 'admin'; // Le rôle est essentiel pour la gestion des accès
+  is_admin?: boolean;
   filiere?: string;
   niveau?: string;
   telephone?: string;
