@@ -21,6 +21,7 @@ import {
   Shield,
 } from 'lucide-react';
 import type { Member, CardMetadata } from '@/types/member';
+import type { User } from '@/types/auth';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isAdmin } = useAuth();
@@ -51,7 +52,7 @@ export default function DashboardPage() {
 // ============================================
 // DASHBOARD MEMBRE
 // ============================================
-function MemberDashboard({ user }: { user: Member }) {
+function MemberDashboard({ user }: { user: User }) {
   const router = useRouter();
   const [cardMetadata, setCardMetadata] = useState<CardMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +94,7 @@ function MemberDashboard({ user }: { user: Member }) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Statut</p>
-                <p className="text-xl font-bold capitalize">{user.statut}</p>
+                <p className="text-xl font-bold capitalize">{user.statut || 'Actif'}</p>
               </div>
             </div>
           </CardContent>
@@ -107,7 +108,7 @@ function MemberDashboard({ user }: { user: Member }) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Numéro</p>
-                <p className="text-xl font-bold">{user.numero_membre}</p>
+                <p className="text-xl font-bold">{user.numero_membre || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
@@ -121,7 +122,7 @@ function MemberDashboard({ user }: { user: Member }) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Filière</p>
-                <p className="text-lg font-bold">{user.filiere}</p>
+                <p className="text-lg font-bold">{user.filiere || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
@@ -149,7 +150,7 @@ function MemberDashboard({ user }: { user: Member }) {
                 </div>
                 <p className="text-sm text-gray-600">
                   Votre carte est prête et valide jusqu'au{' '}
-                  {new Date(user.date_expiration).toLocaleDateString('fr-FR')}
+                  {user.date_expiration ? new Date(user.date_expiration).toLocaleDateString('fr-FR') : 'Date inconnue'}
                 </p>
                 <div className="flex gap-3">
                   <Button
@@ -194,7 +195,7 @@ function MemberDashboard({ user }: { user: Member }) {
             </div>
             <div>
               <p className="text-sm text-gray-500">Niveau</p>
-              <p className="font-medium">{user.niveau}</p>
+              <p className="font-medium">{user.niveau || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Cellule</p>

@@ -27,7 +27,8 @@ import {
     Trash2,
     Filter,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    CreditCard
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { Member, MemberStatus, Filiere } from '@/types/member';
