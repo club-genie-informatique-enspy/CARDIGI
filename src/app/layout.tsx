@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { LoadingBar } from '@/components/LoadingBar';
 
 const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({
@@ -43,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.className} ${roboto.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+        <LoadingBar />
         <AuthProvider>
           <PWAInstallPrompt />
           {children}
