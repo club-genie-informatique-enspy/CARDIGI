@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "https://cardigi.enspy.club",
+        "https://cardigi-orcin.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
