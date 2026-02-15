@@ -49,7 +49,7 @@ app.add_middleware(
 # Middleware pour les hôtes de confiance
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*.cardigi.enspy.club", "cardigi.enspy.club", "localhost", "127.0.0.1", "0.0.0.0"]
+    allowed_hosts=["*.cardigi.enspy.club", "cardigi.enspy.club", "*.onrender.com", "localhost", "127.0.0.1", "0.0.0.0"]
 )
 
 # Middleware pour logger les requêtes
