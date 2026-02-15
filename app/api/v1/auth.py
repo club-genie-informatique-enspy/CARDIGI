@@ -148,6 +148,10 @@ async def create_admin(
     user.is_admin = True
     user.permissions = ["*"]
     
+    # Sauvegarder les modifications de rôle localement (important pour le fallback offline)
+    from ...services.local_member_service import local_member_service
+    local_member_service.upsert_member(user)
+    
     # Générer le token pour l'admin
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
     
