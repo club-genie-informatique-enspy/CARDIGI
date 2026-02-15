@@ -32,3 +32,4 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         value: '["https://cardigi-orcin.vercel.app", "http://localhost:3000"]'
+
