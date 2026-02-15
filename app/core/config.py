@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
+    ADMIN_CREATION_SECRET: str = "CHANGE_ME_IN_PRODUCTION"
     
     # External API
     EXTERNAL_API_URL: str

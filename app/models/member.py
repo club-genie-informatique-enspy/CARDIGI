@@ -61,6 +61,14 @@ class MemberRegistration(BaseModel):
     niveau: Niveau
     password: str = Field(..., min_length=8)
 
+class AdminCreation(BaseModel):
+    """Création d'un compte administrateur (protégé par secret)"""
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    nom: str = Field(default="Admin", min_length=2, max_length=50)
+    prenom: str = Field(default="System", min_length=2, max_length=50)
+    admin_secret: str = Field(..., description="Secret pour créer un admin")
+
 class MemberUpdate(BaseModel):
     """Mise à jour du profil par le membre"""
     nom: Optional[str] = Field(None, min_length=2, max_length=50)

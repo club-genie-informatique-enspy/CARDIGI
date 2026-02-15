@@ -7,7 +7,7 @@ from typing import Annotated
 from ...core import security
 from ...core.config import settings
 from ...services import external_api
-from ...models.member import Token, MemberInDB, MemberRegistration
+from ...models.member import Token, MemberInDB, MemberRegistration, AdminCreation
 from ...api.deps import get_current_user
 
 router = APIRouter()
@@ -82,6 +82,73 @@ async def register_member(
         )
     
     # Générer le token pour l'utilisateur fraîchement inscrit
+    access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
+    
+    return {
+        "access_token": security.create_access_token(
+            subject=user.email,
+            expires_delta=access_token_expires
+        ),
+        "token_type": "bearer",
+        "user": user
+    }
+
+@router.post("/create-admin", response_model=Token, status_code=status.HTTP_201_CREATED, summary="Création d'un compte administrateur")
+async def create_admin(
+    admin_data: AdminCreation
+):
+    """
+    Crée un compte administrateur. Protégé par un secret.
+    
+    **IMPORTANT**: Ce endpoint est protégé par ADMIN_CREATION_SECRET.
+    Utilisez-le uniquement pour créer le premier admin ou des admins supplémentaires.
+    """
+    # Vérifier le secret admin
+    if admin_data.admin_secret != settings.ADMIN_CREATION_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Secret administrateur invalide."
+        )
+    
+    # Vérifier si l'utilisateur existe déjà
+    existing_user = await external_api.get_member_from_external_api(admin_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un utilisateur avec cet email existe déjà."
+        )
+    
+    # Créer un membre avec des données admin
+    from datetime import date
+    from ...models.member import MemberRegistration, Filiere, Niveau
+    
+    # Créer un objet MemberRegistration pour l'admin
+    admin_registration = MemberRegistration(
+        nom=admin_data.nom,
+        prenom=admin_data.prenom,
+        email=admin_data.email,
+        telephone="+237600000000",  # Téléphone par défaut
+        filiere=Filiere.GENIE_INFORMATIQUE,
+        niveau=Niveau.M2,
+        password=admin_data.password
+    )
+    
+    # Inscription via service externe
+    user = await external_api.register_member(admin_registration)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Une erreur est survenue lors de la création de l'admin."
+        )
+    
+    # Mettre à jour le rôle en admin (via l'API externe si possible)
+    # Note: Vous devrez peut-être ajouter une fonction dans external_api pour ça
+    user.role = "admin"
+    user.is_admin = True
+    user.permissions = ["*"]
+    
+    # Générer le token pour l'admin
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
     
     return {
