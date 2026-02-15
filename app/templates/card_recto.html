@@ -1,0 +1,373 @@
+<!-- ========================================
+FICHIER: backend/app/templates/card_recto.html
+Template Jinja2 pour le recto (Design Harmonisé v2 - Exact Match)
+======================================== -->
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Carte Adhérent - Recto</title>
+    <style>
+        @page {
+            size: 85.6mm 53.98mm;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            width: 85.6mm;
+            height: 53.98mm;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        .card {
+            width: 85.6mm;
+            height: 53.98mm;
+            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #f3f4f6 100%);
+            /* White -> Blue-50 -> Gray-100 */
+            position: relative;
+            overflow: hidden;
+            color: #1f2937;
+            /* Gray-800 */
+        }
+
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            background-image: url('{{ circuit_bg_path }}');
+            background-size: 35mm;
+            background-repeat: repeat;
+            filter: invert(1);
+            /* Invert pattern for light bg */
+        }
+
+        .glow-top {
+            position: absolute;
+            top: -15mm;
+            right: -15mm;
+            width: 40mm;
+            height: 40mm;
+            background: radial-gradient(circle, rgba(191, 219, 254, 0.4) 0%, transparent 70%);
+            /* Blue-200 */
+        }
+
+        .glow-bottom {
+            position: absolute;
+            bottom: -15mm;
+            left: -15mm;
+            width: 40mm;
+            height: 40mm;
+            background: radial-gradient(circle, rgba(254, 215, 170, 0.3) 0%, transparent 70%);
+            /* Orange-200 */
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2.5mm 6mm 0 6mm;
+        }
+
+        .logo {
+            width: 9mm;
+            height: 9mm;
+            object-fit: contain;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+
+        .logo-gi {
+            width: 40mm;
+            height: 18mm;
+            object-fit: contain;
+            object-position: right;
+            transform: scale(1.2);
+            transform-origin: right;
+        }
+
+        .header-title {
+            text-align: center;
+            flex: 1;
+            margin-top: 0.5mm;
+        }
+
+        .header-title h1 {
+            font-size: 2.8mm;
+            font-weight: 700;
+            letter-spacing: 1.2mm;
+            text-transform: uppercase;
+            color: #001f3f;
+            /* Dark Blue */
+        }
+
+        .header-line {
+            height: 0.15mm;
+            width: 20%;
+            margin: 0.6mm auto;
+            background: linear-gradient(to right, transparent, rgba(249, 115, 22, 0.8), transparent);
+            /* Orange-500 */
+        }
+
+        .header-title p {
+            color: #ea580c;
+            /* Orange-600 */
+            font-size: 1.5mm;
+            letter-spacing: 0.5mm;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        /* Content - Flexbox layout */
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            padding: 0 7mm;
+            margin-top: 3.5mm;
+            align-items: center;
+            gap: 6mm;
+        }
+
+        .photo-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .photo-container {
+            width: 20mm;
+            height: 25mm;
+            border-radius: 1.8mm;
+            overflow: hidden;
+            border: 0.3mm solid rgba(0, 0, 0, 0.1);
+            background-color: #f3f4f6;
+            box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8mm;
+            font-weight: 700;
+            color: #9ca3af;
+            background-color: #e5e7eb;
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: -1.5mm;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.4mm 2mm;
+            border-radius: 3mm;
+            font-size: 1.4mm;
+            font-weight: 800;
+            text-transform: uppercase;
+            background-color: #10b981;
+            color: white;
+            border: 0.2mm solid white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Member Info */
+        .member-info {
+            flex: 1;
+            margin-top: -1mm;
+        }
+
+        .name-section {
+            border-bottom: 0.15mm solid #e5e7eb;
+            padding-bottom: 1.5mm;
+            margin-bottom: 2mm;
+        }
+
+        .member-lastname {
+            font-size: 4.2mm;
+            font-weight: 800;
+            letter-spacing: 0.3mm;
+            line-height: 1;
+            color: #001f3f;
+            /* Dark Blue */
+        }
+
+        .member-firstname {
+            font-size: 2.8mm;
+            color: #1e40af;
+            /* Blue-800 */
+            font-weight: 500;
+            margin-top: 0.5mm;
+        }
+
+        .details-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 0 1.2mm;
+        }
+
+        .detail-row {
+            display: table-row;
+        }
+
+        .detail-cell.label {
+            color: #ea580c;
+            /* Orange-600 */
+            font-size: 1.4mm;
+            text-transform: uppercase;
+            font-weight: 700;
+            width: 25mm;
+        }
+
+        .detail-cell.value {
+            font-size: 2.2mm;
+            font-weight: 500;
+            color: #374151;
+            /* Gray-700 */
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 3mm;
+            left: 0;
+            right: 0;
+            padding: 0 7mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .footer-label {
+            font-size: 1.4mm;
+            text-transform: uppercase;
+            letter-spacing: 0.3mm;
+            color: #9ca3af;
+            /* Gray-400 */
+            margin-bottom: 0.4mm;
+        }
+
+        .footer-value {
+            font-size: 1.8mm;
+            font-family: monospace;
+            color: #1e3a8a;
+            /* Blue-900 */
+            font-weight: 500;
+        }
+
+        .footer-orange-label {
+            color: #ea580c;
+            /* Orange-600 */
+        }
+
+        .validity-box {
+            background: #eff6ff;
+            /* Blue-50 */
+            padding: 0.4mm 1.5mm;
+            border-radius: 0.4mm;
+            border: 0.1mm solid #dbeafe;
+            font-weight: 700;
+        }
+
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            right: 1mm;
+            transform: translateY(-50%) rotate(90deg);
+            font-size: 12mm;
+            font-weight: 950;
+            color: rgba(0, 31, 63, 0.03);
+            /* Dark Blue very transparent */
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="bg-pattern"></div>
+        <div class="watermark">ENSPY</div>
+        <div class="glow-top"></div>
+        <div class="glow-bottom"></div>
+
+        <div class="header">
+            <img src="{{ logo_enspy_path }}" alt="L" class="logo">
+            <div class="header-title">
+                <h1>CARTE D'ADHÉRENT</h1>
+                <div class="header-line"></div>
+                <p>Année Académique {{ current_year }} - {{ current_year + 1 }}</p>
+            </div>
+            <img src="{{ logo_gi_path }}" alt="L" class="logo-gi">
+        </div>
+
+        <div class="content">
+            <div class="photo-wrapper">
+                <div class="photo-container">
+                    {% if photo_url_resolved %}
+                    <img src="{{ photo_url_resolved }}">
+                    {% else %}
+                    <div class="photo-placeholder">{{ member.prenom[0] }}{{ member.nom[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="status-badge">{{ member.statut }}</div>
+            </div>
+            <div class="member-info">
+                <div class="name-section">
+                    <div class="member-lastname">{{ member.nom|upper }}</div>
+                    <div class="member-firstname">{{ member.prenom }}</div>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-row">
+                        <div class="detail-cell label">Matricule</div>
+                        <div class="detail-cell label">Niveau</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-cell value" style="font-family: monospace;">{{ member.numero_membre }}</div>
+                        <div class="detail-cell value">{{ member.niveau }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-cell label" colspan="2" style="padding-top: 1mm;">Filière</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-cell value" colspan="2">{{ member.filiere }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>
+                <div class="footer-label">Délivrée le</div>
+                <div class="footer-value">{{ member.date_adhesion.strftime('%d/%m/%Y') }}</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="footer-label footer-orange-label">Valide jusqu'au</div>
+                <div class="footer-value validity-box">{{ member.date_expiration.strftime('%d/%m/%Y') }}</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
