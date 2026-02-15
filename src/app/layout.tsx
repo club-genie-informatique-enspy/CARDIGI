@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
 const inter = Inter({ subsets: ['latin'] });
-const roboto = Roboto({ 
+const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
   subsets: ['latin'],
   variable: '--font-roboto'
@@ -18,9 +18,10 @@ export const metadata: Metadata = {
   description: 'Votre adhésion, numériquement vérifiée !',
   manifest: '/manifest.json',
   // themeColor et viewport ONT ÉTÉ SUPPRIMÉS ICI
-  
+
   icons: {
-    icon: '/icons/icon-192.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/icons/icon-192.png',
   },
 };
