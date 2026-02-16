@@ -57,9 +57,9 @@ async def verify_card_token(token: str):
             db.commit()
         
         return {
-            "is_valid": is_valid,
+            "valid": is_valid,
             "member": member,
-            "verified_at": datetime.utcnow(),
+            "verified_at": datetime.utcnow().isoformat(),
             "message": "Membre actif" if is_valid else f"Adhésion {member.statut}"
         }
 
@@ -86,11 +86,13 @@ async def verify_by_numero(data: dict):
     if not member:
          raise HTTPException(status_code=404, detail="Membre non trouvé")
          
+    is_valid = member.statut == "actif"
+    
     # Enregistrer la vérification manuelle
     with SessionLocal() as db:
         scan = VerificationDB(
             member_id=member.id,
-            status="success" if member.statut == "actif" else "invalid",
+            status="success" if is_valid else "invalid",
             scanned_at=datetime.utcnow(),
             metadata_json={"method": "manual"}
         )
@@ -98,6 +100,8 @@ async def verify_by_numero(data: dict):
         db.commit()
     
     return {
-        "is_valid": member.statut == "actif",
-        "member": member
+        "valid": is_valid,
+        "member": member,
+        "verified_at": datetime.utcnow().isoformat(),
+        "message": "Membre actif" if is_valid else f"Adhésion {member.statut}"
     }
