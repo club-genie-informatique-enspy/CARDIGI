@@ -33,22 +33,36 @@ class CardGenerator:
         
         # Résolution de la photo pour WeasyPrint (chemin local si possible)
         photo_url = member.photo_url
-        if photo_url and ("/api/v1/members/photo/" in photo_url or "localhost" in photo_url):
+        
+        # Résolution de la photo pour WeasyPrint
+        # On gère les URLs relatives et les URLs localhost
+        if photo_url and not photo_url.startswith("http"):
+            # C'est une URL relative (ex: /api/v1/members/photo/...)
             try:
-                # Tentative de récupération du chemin local via StorageService
                 from app.services.storage_service import StorageService
                 storage = StorageService()
+                
+                # En mode mock, on cherche le fichier local
                 if storage.use_mock:
-                    mock_photos_dir = storage.mock_dir / "photos"
-                    if mock_photos_dir.exists():
-                        for f in mock_photos_dir.iterdir():
-                            if f.stem == member.id:
-                                # On passe le chemin absolu local pour weasyprint
-                                photo_url = f"file://{f.absolute()}"
-                                break
+                    # Extraire le path final (photos/...)
+                    # On gère les anciens et nouveaux préfixes
+                    clean_path = photo_url
+                    if "/api/v1/members/photo/" in clean_path:
+                        clean_path = clean_path.split("/api/v1/members/photo/")[-1]
+                    elif "/api/v1/cards/download/photos/" in clean_path:
+                        clean_path = f"photos/{clean_path.split('/api/v1/cards/download/photos/')[-1]}"
+                    
+                    full_local_path = storage.mock_dir / clean_path
+                    if full_local_path.exists():
+                        photo_url = f"file://{full_local_path.absolute()}"
+                        logger.info(f"Photo résolue localement: {photo_url}")
+                else:
+                    # En production avec Firebase, WeasyPrint a besoin d'une URL absolue
+                    # Si c'est une URL relative, on essaie de la rendre absolue via l'URL du bucket
+                    # ou on laisse WeasyPrint tenter de la fetcher (mais il a besoin d'une base_url correcte)
+                    pass
             except Exception as e:
-                # En cas d'erreur, on garde l'URL d'origine
-                pass
+                logger.error(f"Erreur résolution photo: {e}")
         
         # Préparer le contexte
         context = {

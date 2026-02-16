@@ -129,8 +129,8 @@ async def download_card(
             }
         )
     except Exception as e:
-        logger.error(f"Erreur lors de la récupération/génération de la carte: {e}")
-        raise HTTPException(status_code=404, detail="Impossible de générer ou récupérer la carte.")
+        logger.error(f"Erreur lors de la récupération/génération de la carte pour {member_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=404, detail=f"Impossible de générer ou récupérer la carte: {str(e)}")
 @router.get("/{member_id}", summary="Récupère les métadonnées de la carte d'un membre")
 async def get_card_metadata(
     member_id: str,
