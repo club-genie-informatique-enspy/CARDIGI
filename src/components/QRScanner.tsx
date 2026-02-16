@@ -86,24 +86,48 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     const stopScanning = async () => {
         if (scannerRef.current) {
             try {
-                if (scannerRef.current.isScanning) {
+                const state = await scannerRef.current.getState();
+                if (state === 2) { // 2 = SCANNING state
                     await scannerRef.current.stop();
                 }
-                setIsScanning(false);
+                // Clear the scanner instance
+                await scannerRef.current.clear();
+                scannerRef.current = null;
             } catch (err) {
                 console.error('Error stopping scanner:', err);
+                // Force cleanup even on error
+                try {
+                    if (scannerRef.current) {
+                        await scannerRef.current.clear();
+                        scannerRef.current = null;
+                    }
+                } catch (e) {
+                    console.error('Force cleanup error:', e);
+                }
+            } finally {
+                setIsScanning(false);
+                setError(null);
             }
         }
     };
 
     useEffect(() => {
         return () => {
-            if (scannerRef.current) {
-                const scanner = scannerRef.current;
-                if (scanner.isScanning) {
-                    scanner.stop().catch(e => console.error('Cleanup stop error:', e));
+            // Cleanup on unmount
+            const cleanup = async () => {
+                if (scannerRef.current) {
+                    try {
+                        const state = await scannerRef.current.getState();
+                        if (state === 2) {
+                            await scannerRef.current.stop();
+                        }
+                        await scannerRef.current.clear();
+                    } catch (e) {
+                        console.error('Cleanup error:', e);
+                    }
                 }
-            }
+            };
+            cleanup();
         };
     }, []);
 
