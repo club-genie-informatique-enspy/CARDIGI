@@ -1,6 +1,6 @@
 # backend/app/api/v1/auth.py
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
@@ -60,7 +60,8 @@ async def verify_token(
     return current_user
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED, summary="Inscription d'un nouveau membre")
 async def register_member(
-    member_data: MemberRegistration
+    member_data: MemberRegistration,
+    background_tasks: BackgroundTasks
 ):
     """
     Inscrit un nouvel étudiant au club et retourne son token de connexion.
@@ -82,15 +83,13 @@ async def register_member(
             detail="Une erreur est survenue lors de l'inscription."
         )
     
-    # Envoyer l'email de bienvenue (en arrière-plan pour ne pas bloquer la réponse)
-    from fastapi import BackgroundTasks
-    # On l'injecte via Depends dans l'endpoint pour de meilleures pratiques, 
-    # mais ici on va le faire directement pour rester simple
-    async def send_email_wrapper():
-        await email_service.send_welcome_email(user.email, user.prenom, member_data.password)
-    
-    import asyncio
-    asyncio.create_task(send_email_wrapper())
+    # Envoyer l'email de bienvenue en arrière-plan (non-bloquant)
+    background_tasks.add_task(
+        email_service.send_welcome_email, 
+        user.email, 
+        user.prenom, 
+        member_data.password
+    )
     
     # Générer le token pour l'utilisateur fraîchement inscrit
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
@@ -106,7 +105,8 @@ async def register_member(
 
 @router.post("/create-admin", response_model=Token, status_code=status.HTTP_201_CREATED, summary="Création d'un compte administrateur")
 async def create_admin(
-    admin_data: AdminCreation
+    admin_data: AdminCreation,
+    background_tasks: BackgroundTasks
 ):
     """
     Crée un compte administrateur. Protégé par un secret.
@@ -163,12 +163,13 @@ async def create_admin(
     from ...services.local_member_service import local_member_service
     local_member_service.upsert_member(user)
     
-    # Envoyer l'email de bienvenue pour l'admin
-    async def send_admin_email():
-        await email_service.send_welcome_email(user.email, user.prenom, admin_data.password)
-    
-    import asyncio
-    asyncio.create_task(send_admin_email())
+    # Envoyer l'email de bienvenue pour l'admin en arrière-plan
+    background_tasks.add_task(
+        email_service.send_welcome_email,
+        user.email,
+        user.prenom,
+        admin_data.password
+    )
     
     # Générer le token pour l'admin
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
