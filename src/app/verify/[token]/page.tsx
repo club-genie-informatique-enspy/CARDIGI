@@ -123,9 +123,13 @@ export default function VerifyPage() {
                 {member.photo_url ? (
                   <div className="w-20 h-20 relative rounded-full overflow-hidden border-2 border-blue-500">
                     <Image
-                      src={member.photo_url}
+                      src={member.photo_url.startsWith('http')
+                        ? member.photo_url
+                        : `${process.env.NEXT_PUBLIC_API_URL}${member.photo_url}`
+                      }
                       alt={member.nom}
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   </div>
