@@ -19,25 +19,33 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     const qrCodeRegionId = 'qr-reader';
 
     const startScanning = async () => {
-        // Check if we're in a browser environment
-        if (typeof window === 'undefined' || typeof document === 'undefined') {
-            setError('Le scanner n\'est pas disponible dans cet environnement');
-            return;
-        }
+        if (typeof window === 'undefined') return;
 
         setIsLoading(true);
         setError(null);
 
         try {
-            // Check if camera is supported
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 throw new Error('Votre navigateur ne supporte pas l\'accès à la caméra');
             }
 
-            // Initialize scanner if not already done
-            if (!scannerRef.current) {
-                scannerRef.current = new Html5Qrcode(qrCodeRegionId);
+            // Dispose of existing scanner if any
+            if (scannerRef.current) {
+                try {
+                    await scannerRef.current.stop();
+                } catch (e) {
+                    console.warn('Error stopping previous scanner:', e);
+                }
+                scannerRef.current = null;
             }
+
+            // Ensure the element exists in DOM
+            const element = document.getElementById(qrCodeRegionId);
+            if (!element) {
+                throw new Error('Élément du scanner non trouvé dans le DOM');
+            }
+
+            scannerRef.current = new Html5Qrcode(qrCodeRegionId);
 
             const config = {
                 fps: 10,
@@ -46,20 +54,13 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
             };
 
             await scannerRef.current.start(
-                { facingMode: 'environment' }, // Use back camera
+                { facingMode: 'environment' },
                 config,
                 (decodedText) => {
-                    // Success callback
                     onScanSuccess(decodedText);
                     stopScanning();
                 },
-                (errorMessage) => {
-                    // Error callback (can be ignored for continuous scanning)
-                    // Only log critical errors
-                    if (errorMessage.includes('NotFoundException') === false) {
-                        console.warn('QR scan error:', errorMessage);
-                    }
-                }
+                () => { } // Ignore scan errors
             );
 
             setIsScanning(true);
@@ -68,28 +69,26 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
             let errorMsg = 'Impossible d\'accéder à la caméra';
 
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                errorMsg = 'Permission d\'accès à la caméra refusée. Veuillez autoriser l\'accès dans les paramètres de votre navigateur.';
-            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                errorMsg = 'Aucune caméra détectée sur cet appareil.';
-            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                errorMsg = 'La caméra est déjà utilisée par une autre application.';
+                errorMsg = 'Permission refusée. Veuillez autoriser l\'accès dans les paramètres.';
+            } else if (err.name === 'NotFoundError') {
+                errorMsg = 'Aucune caméra détectée.';
             } else if (err.message) {
                 errorMsg = err.message;
             }
 
             setError(errorMsg);
-            if (onScanError) {
-                onScanError(errorMsg);
-            }
+            onScanError?.(errorMsg);
         } finally {
             setIsLoading(false);
         }
     };
 
     const stopScanning = async () => {
-        if (scannerRef.current && isScanning) {
+        if (scannerRef.current) {
             try {
-                await scannerRef.current.stop();
+                if (scannerRef.current.isScanning) {
+                    await scannerRef.current.stop();
+                }
                 setIsScanning(false);
             } catch (err) {
                 console.error('Error stopping scanner:', err);
@@ -97,11 +96,13 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         }
     };
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (scannerRef.current) {
-                scannerRef.current.stop().catch(console.error);
+                const scanner = scannerRef.current;
+                if (scanner.isScanning) {
+                    scanner.stop().catch(e => console.error('Cleanup stop error:', e));
+                }
             }
         };
     }, []);

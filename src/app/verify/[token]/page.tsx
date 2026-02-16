@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
   Loader2,
   Calendar,
   CreditCard,
@@ -21,8 +21,10 @@ import type { VerificationResult } from '@/types/member';
 
 export default function VerifyPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const token = params.token as string;
-  
+  const manualNumero = searchParams.get('numero');
+
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +37,13 @@ export default function VerifyPage() {
     try {
       setLoading(true);
       setError(null);
-      
-      const verificationResult = await apiClient.verifyQRCode(token);
+
+      let verificationResult;
+      if (token === 'manual' && manualNumero) {
+        verificationResult = await apiClient.verifyByNumero(manualNumero);
+      } else {
+        verificationResult = await apiClient.verifyQRCode(token);
+      }
       setResult(verificationResult);
     } catch (err: any) {
       console.error('Verification error:', err);
@@ -81,7 +88,7 @@ export default function VerifyPage() {
   // Carte valide
   if (result.valid && result.member) {
     const { member, card } = result;
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-12 px-4">
         <div className="container mx-auto max-w-2xl space-y-6">

@@ -47,6 +47,12 @@ class APIClient {
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
           // Token expiré ou invalide
+          // Ne pas rediriger si c'est un endpoint de vérification publique
+          const url = error.config?.url || '';
+          if (url.includes('/api/v1/verify/')) {
+            return Promise.reject(this.handleError(error));
+          }
+
           this.clearAuthToken();
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
