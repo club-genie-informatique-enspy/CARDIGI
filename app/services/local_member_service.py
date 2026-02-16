@@ -37,6 +37,14 @@ class LocalMemberService:
                 return self._to_pydantic(member)
         return None
 
+    def get_member_by_numero(self, numero: str) -> Optional[MemberInDB]:
+        """Récupère un membre par son numéro de membre (CGI-XXXX-XXX)."""
+        with SessionLocal() as db:
+            member = db.query(MemberDB).filter(MemberDB.numero_membre == numero).first()
+            if member:
+                return self._to_pydantic(member)
+        return None
+
     def list_members(self) -> List[MemberInDB]:
         """Liste tous les membres stockés."""
         with SessionLocal() as db:

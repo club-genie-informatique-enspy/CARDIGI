@@ -96,7 +96,10 @@ async def get_member_from_external_api(user_identifier: str) -> Optional[MemberI
         if result is None:
             # Si non trouvé sur l'API externe, on cherche quand même en local 
             # (cas où l'utilisateur a été créé offline)
-            return local_member_service.get_member_by_email(user_identifier) if "@" in user_identifier else local_member_service.get_member_by_id(user_identifier)
+            if "@" in user_identifier:
+                return local_member_service.get_member_by_email(user_identifier)
+            member = local_member_service.get_member_by_id(user_identifier)
+            return member if member else local_member_service.get_member_by_numero(user_identifier)
 
         data = result.copy()
         is_admin = data.get("is_admin", False)
@@ -112,7 +115,14 @@ async def get_member_from_external_api(user_identifier: str) -> Optional[MemberI
     except HTTPException as e:
         if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
             logger.info(f"Fallback local pour la récupération de : {user_identifier}")
-            return local_member_service.get_member_by_email(user_identifier) if "@" in user_identifier else local_member_service.get_member_by_id(user_identifier)
+            if "@" in user_identifier:
+                return local_member_service.get_member_by_email(user_identifier)
+            
+            # On tente par ID technique, puis par numéro de membre (CGI-...)
+            member = local_member_service.get_member_by_id(user_identifier)
+            if not member:
+                member = local_member_service.get_member_by_numero(user_identifier)
+            return member
         raise e
     except Exception as e:
         logger.error(f"Erreur de validation Pydantic: {e}")
