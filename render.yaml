@@ -25,9 +25,9 @@ services:
       - key: ADMIN_CREATION_SECRET
         sync: false
       - key: EXTERNAL_API_URL
-        value: https://api.your-org.com/api
+        value: http://localhost:8080/api
       - key: EXTERNAL_API_KEY
-        sync: false
+        value: local-mode-no-external-api
       - key: FIREBASE_PROJECT_ID
         sync: false
       - key: FIREBASE_STORAGE_BUCKET

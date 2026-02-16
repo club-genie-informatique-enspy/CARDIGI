@@ -19,6 +19,18 @@ logger = logging.getLogger(__name__)
 
 async def _make_external_request(method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
     """Fonction utilitaire pour effectuer des requêtes vers l'API Externe."""
+    # Si l'URL de l'API externe est un placeholder ou invalide, on lève directement une exception
+    # pour forcer le fallback local
+    if not settings.EXTERNAL_API_URL or \
+       "your-org.com" in settings.EXTERNAL_API_URL or \
+       "localhost:8080" in settings.EXTERNAL_API_URL or \
+       settings.EXTERNAL_API_URL == "http://localhost:8080/api":
+        logger.info("Mode local-only activé (pas d'API externe configurée)")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LOCAL_ONLY_MODE"
+        )
+    
     api_url = settings.EXTERNAL_API_URL.rstrip('/') + endpoint
     
     headers = {
