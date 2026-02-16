@@ -153,31 +153,39 @@ async def upload_photo(
         logging.error(f"Erreur lors de l'upload de la photo: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/photo/{member_id}")
-async def get_photo(member_id: str):
+@router.get("/photo/{path:path}")
+async def get_photo(path: str):
     """
     Récupère la photo de profil d'un membre.
-    Utilisé pour servir les fichiers locaux en développement.
+    Utilisé pour servir les fichiers locaux en développement ou rediriger vers Firebase.
     """
     try:
         if settings.ENVIRONMENT == "development":
-            mock_photos_dir = storage_service.mock_dir / "photos"
-            found_path = None
-            if mock_photos_dir.exists():
-                for f in mock_photos_dir.iterdir():
-                    if f.stem == member_id:
-                        found_path = f"photos/{f.name}"
-                        break
+            # Si le chemin commence par 'photos/', on l'utilise directement
+            file_path = path
+            if not file_path.startswith("photos/"):
+                # Sinon on cherche dans le dossier photos
+                mock_photos_dir = storage_service.mock_dir / "photos"
+                if mock_photos_dir.exists():
+                    for f in mock_photos_dir.iterdir():
+                        if f.stem == path:
+                            file_path = f"photos/{f.name}"
+                            break
             
-            if not found_path:
-                 raise HTTPException(status_code=404, detail="Photo non trouvée")
-            
-            image_buffer = await storage_service.get_file(found_path)
-            mime = "image/png" if found_path.lower().endswith(".png") else "image/jpeg"
+            image_buffer = await storage_service.get_file(file_path)
+            mime = "image/png" if file_path.lower().endswith(".png") else "image/jpeg"
             return StreamingResponse(image_buffer, media_type=mime)
             
         else:
-            member = await external_api.get_member_from_external_api(member_id)
+            # En production, on essaie de rediriger vers l'URL publique
+            # Si c'est déjà un chemin complet, on redirige vers le bucket
+            if path.startswith("photos/"):
+                public_url = f"https://storage.googleapis.com/{settings.FIREBASE_STORAGE_BUCKET}/{path}"
+                from fastapi.responses import RedirectResponse
+                return RedirectResponse(url=public_url)
+                
+            # Sinon on cherche le membre
+            member = await external_api.get_member_from_external_api(path)
             if not member or not member.photo_url:
                 raise HTTPException(status_code=404, detail="Photo non trouvée")
             
@@ -185,4 +193,5 @@ async def get_photo(member_id: str):
             return RedirectResponse(url=member.photo_url)
             
     except Exception as e:
+        logger.error(f"Erreur get_photo: {e}")
         raise HTTPException(status_code=404, detail="Image non trouvée")

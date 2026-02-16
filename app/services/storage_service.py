@@ -93,7 +93,7 @@ class StorageService:
                 with open(full_path, "wb") as f:
                     f.write(file_data)
                 logger.info(f"Mock Upload: {destination_path}")
-                return f"/api/v1/cards/download/{destination_path}"
+                return f"/api/v1/members/photo/{destination_path}"
 
             blob = self.bucket.blob(destination_path)
             from fastapi.concurrency import run_in_threadpool

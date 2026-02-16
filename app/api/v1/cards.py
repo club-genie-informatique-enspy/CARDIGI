@@ -77,6 +77,13 @@ async def generate_card(
 import asyncio
 generation_locks = {}
 
+@router.get("/download/photos/{filename}")
+async def download_photo_redirect(filename: str):
+    """Redirection pour les anciens chemins de photos mal formés (fix 401)"""
+    from fastapi.responses import RedirectResponse
+    from app.core.config import settings
+    return RedirectResponse(url=f"{settings.API_PREFIX}/members/photo/photos/{filename}")
+
 @router.get("/download/{member_id}/{side}")
 async def download_card(
     member_id: str,
