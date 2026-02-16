@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Niveau, Cellule, Filiere } from '@/types/member';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowLeft, Save, User as UserIcon } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -156,16 +157,17 @@ export default function ProfilePage() {
                 <Button
                     variant="ghost"
                     onClick={() => router.back()}
-                    className="mb-4"
+                    className="mb-8 hover:bg-white/20 transition-all rounded-xl font-bold group"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+                    <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Retour
                 </Button>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-6">
+                <Card className="border-none shadow-dramatic bg-white/95 backdrop-blur-md overflow-hidden animate-scale-in">
+                    <CardHeader className="bg-primary/5 p-8 border-b border-primary/10">
+                        <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
                             <div className="relative group">
-                                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-200 shadow-inner">
+                                <div className="w-32 h-32 bg-white rounded-3xl flex items-center justify-center overflow-hidden border-4 border-white shadow-strong transition-all duration-500 group-hover:scale-105 group-hover:rotate-3 rotate-1">
                                     {formData.photo_url ? (
                                         <img
                                             src={resolvePhotoUrl(formData.photo_url) || ''}
@@ -173,19 +175,23 @@ export default function ProfilePage() {
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <UserIcon className="w-12 h-12 text-blue-600" />
+                                        <div className="gradient-primary w-full h-full flex items-center justify-center">
+                                            <span className="text-4xl font-black text-white">
+                                                {user?.prenom?.[0]}{user?.nom?.[0]}
+                                            </span>
+                                        </div>
                                     )}
                                     {isUploading && (
-                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                                            <Loader2 className="w-10 h-10 text-white animate-spin" />
                                         </div>
                                     )}
                                 </div>
                                 <label
                                     htmlFor="photo-upload"
-                                    className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-md border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                                    className="absolute -bottom-2 -right-2 gradient-accent p-3 rounded-2xl shadow-strong border-2 border-white cursor-pointer hover:scale-110 transition-all"
                                 >
-                                    <Save className="w-4 h-4 text-gray-600" />
+                                    <Save className="w-5 h-5 text-accent-foreground" />
                                     <input
                                         id="photo-upload"
                                         type="file"
@@ -196,83 +202,91 @@ export default function ProfilePage() {
                                     />
                                 </label>
                             </div>
-                            <div className="flex-1">
-                                <CardTitle className="text-2xl">Mon Profil</CardTitle>
-                                <CardDescription>
-                                    {user.prenom} {user.nom} - {user.numero_membre}
-                                </CardDescription>
-                                <p className="text-xs text-blue-600 mt-2 font-medium">
-                                    Cliquez sur l'icône de sauvegarde pour changer votre photo
+                            <div className="flex-1 space-y-2">
+                                <CardTitle className="text-4xl font-black font-poppins text-gray-901 tracking-tight">Mon Profil</CardTitle>
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 font-bold">
+                                        {user.numero_membre}
+                                    </Badge>
+                                    <p className="text-lg font-bold text-gray-500">
+                                        {user.prenom} {user.nom}
+                                    </p>
+                                </div>
+                                <p className="text-sm text-primary/70 font-bold uppercase tracking-widest mt-4">
+                                    Cliquez sur la disquette pour changer votre photo
                                 </p>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email (Non modifiable)</Label>
-                                    <Input id="email" value={user.email} disabled className="bg-gray-50 text-gray-500" />
+                    <CardContent className="p-8">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-gray-400">Email (Lecture seule)</Label>
+                                    <Input id="email" value={user.email} disabled className="h-12 bg-gray-50 border-gray-100 text-gray-500 rounded-xl" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="telephone">Téléphone</Label>
+                                <div className="space-y-3">
+                                    <Label htmlFor="telephone" className="text-xs font-black uppercase tracking-widest text-gray-400">Téléphone</Label>
                                     <Input
                                         id="telephone"
                                         value={formData.telephone}
                                         onChange={handleChange}
                                         disabled={isSaving || isUploading}
                                         placeholder="+237 ..."
+                                        className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nom">Nom</Label>
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <Label htmlFor="nom" className="text-xs font-black uppercase tracking-widest text-gray-400">Nom</Label>
                                     <Input
                                         id="nom"
                                         value={formData.nom}
                                         onChange={handleChange}
                                         disabled={isSaving || isUploading}
                                         placeholder="Votre nom"
+                                        className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="prenom">Prénom</Label>
+                                <div className="space-y-3">
+                                    <Label htmlFor="prenom" className="text-xs font-black uppercase tracking-widest text-gray-400">Prénom</Label>
                                     <Input
                                         id="prenom"
                                         value={formData.prenom}
                                         onChange={handleChange}
                                         disabled={isSaving || isUploading}
                                         placeholder="Votre prénom"
+                                        className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Filière</Label>
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Filière</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
                                         value={formData.filiere}
                                         onChange={(e) => handleSelectChange('filiere', e.target.value)}
                                         disabled={isSaving || isUploading}
                                     >
-                                        <option value="">Votre filière</option>
+                                        <option value="">Sélectionnez votre filière</option>
                                         {Object.values(Filiere).map(f => (
                                             <option key={f} value={f}>{f}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Niveau</Label>
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Niveau</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
                                         value={formData.niveau}
                                         onChange={(e) => handleSelectChange('niveau', e.target.value)}
                                         disabled={isSaving || isUploading}
                                     >
-                                        <option value="">Votre niveau</option>
+                                        <option value="">Sélectionnez votre niveau</option>
                                         {Object.values(Niveau).map(n => (
                                             <option key={n} value={n}>{n}</option>
                                         ))}
@@ -280,16 +294,16 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2 md:col-start-2">
-                                    <Label>Cellule</Label>
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-3 md:col-start-2">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Cellule</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
                                         value={formData.cellule}
                                         onChange={(e) => handleSelectChange('cellule', e.target.value)}
                                         disabled={isSaving || isUploading}
                                     >
-                                        <option value="">Votre cellule</option>
+                                        <option value="">Sélectionnez votre cellule</option>
                                         {Object.values(Cellule).map(c => (
                                             <option key={c} value={c}>{c}</option>
                                         ))}
@@ -297,19 +311,21 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isSaving || isUploading}>
-                                {isSaving ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Enregistrement...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Enregistrer les modifications
-                                    </>
-                                )}
-                            </Button>
+                            <div className="pt-8 border-t border-gray-100">
+                                <Button type="submit" className="w-full gradient-primary h-14 text-lg font-bold shadow-medium hover-lift rounded-2xl transition-all" disabled={isSaving || isUploading}>
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                                            Enregistrement en cours...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="mr-3 h-5 w-5" />
+                                            Mettre à jour mon profil
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                         </form>
                     </CardContent>
                 </Card>

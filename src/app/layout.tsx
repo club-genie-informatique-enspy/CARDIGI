@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'; // Importez 'Viewport' ici
 import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
+import { Suspense } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
@@ -43,8 +44,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${inter.className} ${roboto.variable}`}>
-      <body className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-        <LoadingBar />
+      <body className="min-h-screen gradient-mesh">
+        <Suspense fallback={null}>
+          <LoadingBar />
+        </Suspense>
         <AuthProvider>
           <PWAInstallPrompt />
           {children}

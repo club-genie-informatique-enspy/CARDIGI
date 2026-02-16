@@ -64,28 +64,28 @@ export default function CreateMemberPage() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="max-w-3xl mx-auto space-y-10 animate-fade-in">
             <Button
                 variant="ghost"
                 onClick={() => router.back()}
-                className="mb-6 pl-0 hover:bg-transparent hover:text-blue-600"
+                className="hover:bg-white/20 transition-all rounded-xl font-bold group"
             >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour au tableau de bord
+                <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                Retour à la console
             </Button>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Ajouter un nouveau membre</CardTitle>
-                    <CardDescription>
-                        Créez un compte pour un nouvel adhérent. Il pourra ensuite se connecter avec ces identifiants.
+            <Card className="border-none shadow-dramatic bg-white/95 backdrop-blur-md overflow-hidden animate-scale-in">
+                <CardHeader className="bg-primary/5 p-8 border-b border-primary/10">
+                    <CardTitle className="text-3xl font-black font-poppins text-gray-901 tracking-tight">Nouveau Membre</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">
+                        Enregistrez un nouvel adhérent GI. Un compte digital sera automatiquement créé.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="nom">Nom</Label>
+                <CardContent className="p-8">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <Label htmlFor="nom" className="text-xs font-black uppercase tracking-widest text-gray-400">Nom</Label>
                                 <Input
                                     id="nom"
                                     name="nom"
@@ -93,10 +93,11 @@ export default function CreateMemberPage() {
                                     required
                                     value={formData.nom}
                                     onChange={handleChange}
+                                    className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="prenom">Prénom</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="prenom" className="text-xs font-black uppercase tracking-widest text-gray-400">Prénom</Label>
                                 <Input
                                     id="prenom"
                                     name="prenom"
@@ -104,103 +105,113 @@ export default function CreateMemberPage() {
                                     required
                                     value={formData.prenom}
                                     onChange={handleChange}
+                                    className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email Universitaire</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="prenom.nom@enspy.cm"
-                                required
-                                value={formData.email}
-                                onChange={handleChange}
-                            />
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-gray-400">Email Universitaire</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="prenom.nom@enspy.cm"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label htmlFor="telephone" className="text-xs font-black uppercase tracking-widest text-gray-400">Téléphone</Label>
+                                <Input
+                                    id="telephone"
+                                    name="telephone"
+                                    placeholder="694773472"
+                                    required
+                                    value={formData.telephone}
+                                    onChange={handleChange}
+                                    className="h-12 border-gray-200 focus:ring-primary rounded-xl transition-all"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="telephone">Téléphone</Label>
-                            <Input
-                                id="telephone"
-                                name="telephone"
-                                placeholder="694773472"
-                                required
-                                value={formData.telephone}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="filiere">Filière</Label>
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Filière</Label>
                                 <Select
                                     name="filiere"
                                     value={formData.filiere}
                                     onValueChange={(val: any) => handleSelectChange('filiere', val)}
                                     required
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner..." />
+                                    <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-white font-bold transition-all">
+                                        <SelectValue placeholder="Choisir la filière" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-2xl shadow-dramatic border-gray-100">
                                         {Object.values(Filiere).map((f) => (
-                                            <SelectItem key={f} value={f}>{f}</SelectItem>
+                                            <SelectItem key={f} value={f} className="font-medium">{f}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="niveau">Niveau</Label>
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Niveau</Label>
                                 <Select
                                     name="niveau"
                                     value={formData.niveau}
                                     onValueChange={(val: any) => handleSelectChange('niveau', val)}
                                     required
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner..." />
+                                    <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-white font-bold transition-all">
+                                        <SelectValue placeholder="Choisir le niveau" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-2xl shadow-dramatic border-gray-100">
                                         {Object.values(Niveau).map((n) => (
-                                            <SelectItem key={n} value={n}>{n}</SelectItem>
+                                            <SelectItem key={n} value={n} className="font-medium">{n}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-4 border-t">
-                            <Label htmlFor="password">Mot de passe provisoire</Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="text"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Mot de passe"
-                                required
-                            />
-                            <p className="text-xs text-gray-500">
-                                Communiquez ce mot de passe à l'adhérent pour sa première connexion.
-                            </p>
+                        <div className="space-y-4 pt-8 border-t border-gray-100">
+                            <div className="space-y-3">
+                                <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-primary">Mot de passe par défaut</Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="text"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Mot de passe"
+                                    required
+                                    className="h-12 bg-primary/5 border-primary/20 text-primary font-bold rounded-xl"
+                                />
+                                <p className="text-xs text-gray-400 font-medium">
+                                    L'adhérent devra modifier ce mot de passe dès sa première connexion.
+                                </p>
+                            </div>
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Création en cours...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    Créer le membre
-                                </>
-                            )}
-                        </Button>
+                        <div className="pt-4">
+                            <Button type="submit" className="w-full gradient-primary h-14 text-lg font-bold shadow-medium hover-lift rounded-2xl transition-all" disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                                        Finalisation de l'adhésion...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="mr-3 h-5 w-5" />
+                                        Confirmer l'inscription
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </form>
                 </CardContent>
             </Card>

@@ -9,31 +9,32 @@ export default function GenerateBatchPage() {
     const router = useRouter();
 
     return (
-        <div className="container mx-auto px-4 py-8 space-y-8">
+        <div className="space-y-12 animate-fade-in">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                        <Button
-                            variant="link"
-                            className="p-0 h-auto text-gray-500"
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="flex items-center font-black uppercase tracking-widest text-[10px] text-gray-400 hover:text-primary transition-colors group"
                             onClick={() => router.push('/admin')}
                         >
-                            <LayoutDashboard className="w-4 h-4 mr-1" />
-                            Tableau de bord
-                        </Button>
-                        <span>/</span>
-                        <span className="text-gray-900 font-medium">Génération en masse</span>
+                            <LayoutDashboard className="w-3 h-3 mr-2 group-hover:scale-110 transition-transform" />
+                            Console
+                        </button>
+                        <span className="text-gray-200">/</span>
+                        <span className="font-black uppercase tracking-widest text-[10px] text-primary">Génération en masse</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900">Batch Processing</h1>
-                    <p className="text-gray-600">Générer les cartes numériques pour l'ensemble des adhérents du club.</p>
+                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight font-poppins">
+                        Batch <span className="text-secondary">Processing</span>
+                    </h1>
+                    <p className="text-lg text-gray-500 font-medium">Gérez le déploiement massif des identités numériques GI.</p>
                 </div>
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => router.back()}
-                    className="gap-2"
+                    className="hover:bg-white/20 transition-all rounded-xl font-bold group"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
                     Retour
                 </Button>
             </div>
@@ -42,22 +43,32 @@ export default function GenerateBatchPage() {
                 <BulkGenerator />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 mt-8">
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
-                    <h3 className="font-bold text-blue-900 mb-2">Instructions</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-blue-800">
-                        <li>Le processus peut prendre quelques minutes selon le nombre d'adhérents.</li>
-                        <li>Ne fermez pas cette page pendant le traitement.</li>
-                        <li>Une fois terminé, vous pourrez télécharger un fichier ZIP contenant toutes les cartes.</li>
-                        <li>Les membres recevront leur carte automatiquement sur leur dashboard.</li>
+            <div className="grid md:grid-cols-2 gap-8 mt-12 animate-slide-up">
+                <div className="bg-primary/5 border-2 border-primary/10 rounded-3xl p-8 space-y-4 shadow-soft">
+                    <h3 className="text-xl font-black font-poppins text-primary">Consignes de sécurité</h3>
+                    <ul className="space-y-4 text-sm font-medium text-primary/80">
+                        <li className="flex gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
+                            <span>Durée de traitement estimée à ~5 mins pour 100 membres.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
+                            <span>Maintenez cette fenêtre active pour garantir l'intégrité du flux.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
+                            <span>Accès immédiat pour les membres sur leur interface privée.</span>
+                        </li>
                     </ul>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-6">
-                    <h3 className="font-bold text-amber-900 mb-2">Avertissement</h3>
-                    <p className="text-sm text-amber-800">
-                        La génération de cartes écrase les versions précédentes si elles existent.
-                        Il est recommandé de faire un export des données avant de lancer une génération totale.
+                <div className="bg-accent/5 border-2 border-accent/10 rounded-3xl p-8 space-y-4 shadow-soft">
+                    <h3 className="text-xl font-black font-poppins text-accent">Attention</h3>
+                    <p className="text-sm font-medium text-accent/80 leading-relaxed italic">
+                        "L'écrasement des données est irréversible. Toutes les versions graphiques précédentes seront remplacées par les nouveaux templates configurés."
+                    </p>
+                    <p className="text-xs font-black uppercase tracking-widest text-accent/60 opacity-60">
+                         ⚠️ Vérifiez la configuration avant l'export
                     </p>
                 </div>
             </div>

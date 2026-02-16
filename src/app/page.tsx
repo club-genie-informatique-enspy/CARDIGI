@@ -28,75 +28,85 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'url(/images/circuit_bg.svg)',
-            backgroundSize: 'cover'
-          }} />
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-primary-dark to-blue-900 text-white min-h-[90vh] flex items-center">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px] animate-pulse"></div>
         </div>
 
-        <div className="relative container mx-auto px-4 py-20">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+        <div className="relative container mx-auto px-4 py-12 md:py-24">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-16">
             {/* Left content */}
-            <div className="flex-1 space-y-6">
-              <div className="flex items-center gap-4 mb-4">
+            <div className="flex-1 space-y-8 animate-slide-up">
+              <div className="flex items-center gap-10 mb-8 flex-wrap">
                 <Image
                   src="/images/logo_enspy.png"
                   alt="ENSPY"
-                  width={60}
-                  height={60}
+                  width={70}
+                  height={70}
+                  className="rounded-lg hover:scale-110 transition-transform duration-300"
                 />
                 <Image
                   src="/images/logo_gi.png"
                   alt="Club GI"
-                  width={250}
-                  height={250}
-                  className="object-contain"
+                  width={180}
+                  height={60}
+                  className="object-contain hover:scale-105 transition-transform duration-300"
                 />
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                CARDIGI
-              </h1>
-              <p className="text-2xl text-blue-200">
-                Cartes Digitales Génie Informatique
-              </p>
-              <p className="text-xl text-blue-100 italic">
-                "Votre adhésion, numériquement vérifiée !"
-              </p>
+              <div className="space-y-4">
+                <h1 className="text-6xl md:text-7xl font-extrabold leading-tight tracking-tight font-poppins">
+                  <span className="bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent">
+                    CARDIGI
+                  </span>
+                </h1>
+                <p className="text-2xl md:text-3xl font-medium text-blue-200 max-w-xl">
+                  Cartes Digitales Génie Informatique
+                </p>
+                <p className="text-xl text-blue-100/80 italic font-light">
+                  "Votre adhésion, numériquement vérifiée !"
+                </p>
+              </div>
 
-              <div className="flex flex-wrap gap-4 mt-8">
+              <div className="flex flex-wrap gap-5 mt-10">
                 <Button
                   size="lg"
                   onClick={() => router.push('/login')}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg"
+                  className="gradient-primary hover:opacity-90 text-white px-10 py-7 text-lg font-bold shadow-intense hover-lift rounded-xl"
                 >
                   Se connecter
-                  <CreditCard className="ml-2" />
+                  <CreditCard className="ml-2 w-6 h-6" />
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-blue-500 border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 px-10 py-7 text-lg font-semibold backdrop-blur-sm rounded-xl transition-all hover:border-white/50"
                 >
-                  En savoir plus
+                  Découvrir
                 </Button>
               </div>
             </div>
 
             {/* Right content - Card preview */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center md:justify-end animate-fade-in sm:mt-12 md:mt-0">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-pink-500 blur-3xl opacity-30 rounded-full"></div>
-                <Image
-                  src="/images/card-preview.png"
-                  alt="Aperçu carte"
-                  width={400}
-                  height={250}
-                  className="relative rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
-                />
+                <div className="absolute -inset-4 bg-gradient-to-tr from-primary via-accent to-secondary blur-2xl opacity-30 rounded-full animate-pulse"></div>
+                <div className="relative group">
+                  <Image
+                    src="/images/card-preview.png"
+                    alt="Aperçu carte"
+                    width={450}
+                    height={280}
+                    className="relative rounded-[2rem] shadow-dramatic border border-white/10 transition-all duration-500 group-hover:rotate-2 group-hover:scale-105"
+                  />
+                  {/* Floating badge */}
+                  <div className="absolute -top-6 -right-6 bg-accent text-accent-foreground px-4 py-2 rounded-full font-bold shadow-strong rotate-12 animate-bounce">
+                    Nouveau !
+                  </div>
+                </div>
               </div>
             </div>
           </div>

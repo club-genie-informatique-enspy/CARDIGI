@@ -132,76 +132,113 @@ export default function CardPage() {
   const qrData = `${process.env.NEXT_PUBLIC_API_URL}/verify/${memberId}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-6 sm:py-12 px-2 sm:px-4">
-      <div className="container mx-auto max-w-4xl space-y-6 sm:space-y-8">
+    <div className="min-h-screen gradient-mesh py-6 sm:py-12 px-4 sm:px-6 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[150px] rounded-full -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 blur-[150px] rounded-full -ml-64 -mb-64" />
+
+      <div className="container mx-auto max-w-4xl space-y-12 sm:space-y-16 relative z-10 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <Button
             variant="ghost"
             onClick={handleBack}
+            className="hover:bg-white/20 transition-all rounded-xl font-bold group"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
             Retour
           </Button>
         </div>
 
         {/* Titre */}
-        <div className="text-center space-y-1 sm:space-y-2">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">
-            Carte d'Adhérent
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl sm:text-6xl font-black text-gray-900 tracking-tight font-poppins">
+            ID <span className="text-secondary text-transparent bg-clip-text gradient-secondary">Digitale</span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600">
-            {member.prenom} {member.nom}
-          </p>
-          <p className="text-sm sm:text-base text-gray-500">
-            N° {member.numero_membre} - Statut : <span className={`font-semibold ${member.statut === 'actif' ? 'text-green-600' : 'text-red-600'}`}>{member.statut.toUpperCase()}</span>
-          </p>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-xl sm:text-2xl font-bold text-gray-700">
+              {member.prenom} {member.nom}
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 bg-white/80 backdrop-blur-md rounded-lg shadow-soft text-xs font-black text-gray-500 uppercase tracking-widest border border-gray-100 italic">
+                N° {member.numero_membre}
+              </span>
+              <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest shadow-soft ${member.statut === 'actif' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+                {member.statut}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Carte avec animation flip */}
-        <CardFlip
-          member={member}
-          qrData={qrData}
-        />
-
-        {/* Boutons de téléchargement */}
-        <DownloadButtons memberId={member.id} />
-
-        {/* Instructions PWA */}
-        <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
-          <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-            <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-            Installer l'application
-          </h2>
-          <p className="text-gray-600">
-            Installez **CARDIGI** sur votre téléphone pour accéder à votre carte
-            hors ligne et recevoir des notifications.
-          </p>
-          <Button
-            className="w-full sm:w-auto"
-            onClick={() => {
-              // Trigger PWA install
-              const event = new CustomEvent('pwa-install-requested');
-              window.dispatchEvent(event);
-            }}
-          >
-            Installer maintenant
-          </Button>
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-white/20 blur-2xl rounded-[4rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <CardFlip
+            member={member}
+            qrData={qrData}
+          />
         </div>
 
-        {/* Informations complémentaires */}
-        <div className="bg-blue-50 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-3">
-            ℹ️ Informations
-          </h3>
-          <ul className="space-y-2 text-sm text-blue-800">
-            <li>✓ Votre carte est valide jusqu'au **{formatDate(member.date_expiration)}**</li>
-            <li>✓ Le QR code se renouvelle automatiquement toutes les 24h pour plus de sécurité</li>
-            <li>✓ Vous pouvez télécharger votre carte en PNG ou PDF</li>
-            <li>✓ La carte fonctionne hors ligne une fois téléchargée</li>
-          </ul>
+        {/* Boutons de téléchargement */}
+        <div className="bg-white/30 backdrop-blur-md rounded-3xl p-2 border border-white/50 shadow-strong animate-slide-up">
+          <DownloadButtons memberId={member.id} />
+        </div>
+
+        {/* Grid Info & Install */}
+        <div className="grid md:grid-cols-2 gap-8 animate-slide-up">
+          {/* Instructions PWA */}
+          <div className="bg-white/70 backdrop-blur-md rounded-[2.5rem] shadow-dramatic p-10 space-y-6 border border-white/50 group hover-lift overflow-hidden">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-primary/10 rounded-2xl shadow-soft group-hover:bg-primary/20 transition-all">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+              <h2 className="text-2xl font-black font-poppins text-gray-900">
+                Mode Off-line
+              </h2>
+            </div>
+            <p className="text-gray-500 font-medium leading-relaxed">
+              Installez l'application **CARDIGI** pour accéder à votre identifiant même sans connexion internet.
+            </p>
+            <Button
+              className="w-full h-14 gradient-primary rounded-2xl font-bold text-lg shadow-medium hover-lift transition-all"
+              onClick={() => {
+                // Trigger PWA install
+                const event = new CustomEvent('pwa-install-requested');
+                window.dispatchEvent(event);
+              }}
+            >
+              Installer l'App
+            </Button>
+          </div>
+
+          {/* Informations complémentaires */}
+          <div className="gradient-primary rounded-[2.5rem] p-10 shadow-dramatic text-white space-y-6 relative overflow-hidden group hover-lift">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <h3 className="text-2xl font-black font-poppins text-white flex items-center gap-3">
+              <AlertCircle className="w-6 h-6 text-accent" />
+              Consignes
+            </h3>
+            <ul className="space-y-4">
+              <InfoItem icon="✓" text={`Valide jusqu'au ${formatDate(member.date_expiration)}`} />
+              <InfoItem icon="✓" text="QR Code actualisé dynamiquement" />
+              <InfoItem icon="✓" text="Format PNG & PDF disponibles" />
+              <InfoItem icon="✓" text="Accès membre 24/7 garanti" />
+            </ul>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function InfoItem({ icon, text }: { icon: string, text: string }) {
+  return (
+    <li className="flex items-start gap-3 group/item">
+      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs group-hover/item:scale-110 transition-transform">
+        {icon}
+      </span>
+      <span className="text-sm font-bold text-white/90 leading-tight pt-0.5">
+        {text}
+      </span>
+    </li>
   );
 }

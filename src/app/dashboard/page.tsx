@@ -19,7 +19,9 @@ import {
   Users,
   TrendingUp,
   Shield,
+  QrCode,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Member, CardMetadata } from '@/types/member';
 import type { User } from '@/types/auth';
 
@@ -75,54 +77,54 @@ function MemberDashboard({ user }: { user: User }) {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Bienvenue, {user.prenom} !
+      <div className="animate-fade-in mb-8">
+        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight font-poppins">
+          Bienvenue, <span className="text-primary">{user.prenom}</span> !
         </h1>
-        <p className="text-gray-600 mt-1">
-          Gérez votre carte d'adhérent et vos informations
+        <p className="text-lg text-gray-500 mt-2 font-medium">
+          Gérez votre adhésion digitale en toute simplicité.
         </p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+        <Card className="border-none shadow-medium hover-lift bg-white/50 backdrop-blur-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <CreditCard className="w-6 h-6 text-blue-600" />
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-primary/10 rounded-2xl">
+                <CreditCard className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Statut</p>
-                <p className="text-xl font-bold capitalize">{user.statut || 'Actif'}</p>
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Statut</p>
+                <p className="text-2xl font-bold text-gray-900 capitalize">{user.statut || 'Actif'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-none shadow-medium hover-lift bg-white/50 backdrop-blur-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-success/10 rounded-2xl">
+                <CheckCircle className="w-6 h-6 text-success" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Numéro</p>
-                <p className="text-xl font-bold">{user.numero_membre || 'N/A'}</p>
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Numéro</p>
+                <p className="text-2xl font-bold text-gray-900">{user.numero_membre || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-none shadow-medium hover-lift bg-white/50 backdrop-blur-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Shield className="w-6 h-6 text-purple-600" />
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-secondary/10 rounded-2xl">
+                <Shield className="w-6 h-6 text-secondary" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Filière</p>
-                <p className="text-lg font-bold">{user.filiere || 'N/A'}</p>
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Filière</p>
+                <p className="text-xl font-bold text-gray-900">{user.filiere || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
@@ -130,84 +132,109 @@ function MemberDashboard({ user }: { user: User }) {
       </div>
 
       {/* Main Actions */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slide-up" style={{ animationDelay: '200ms' }}>
         {/* Card Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Ma Carte d'Adhérent
+        <Card className="border-none shadow-dramatic bg-white/95 overflow-hidden group">
+          <CardHeader className="bg-primary/5 p-8 border-b border-primary/10">
+            <CardTitle className="flex items-center gap-3 text-2xl font-black font-poppins text-gray-900">
+              <CreditCard className="w-6 h-6 text-primary" />
+              Ma Carte Digitale
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-8 space-y-6">
             {loading ? (
-              <Skeleton className="h-24" />
+              <Skeleton className="h-40 rounded-2xl" />
             ) : cardMetadata ? (
               <>
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-medium">Carte générée</span>
+                <div className="flex items-center gap-3 text-success p-4 bg-success/5 rounded-2xl">
+                  <div className="p-2 bg-success/20 rounded-full">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-bold">Adhésion à jour</span>
+                    <p className="text-xs opacity-80 uppercase font-bold tracking-wider">Validée par le club</p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Votre carte est prête et valide jusqu'au{' '}
-                  {user.date_expiration ? new Date(user.date_expiration).toLocaleDateString('fr-FR') : 'Date inconnue'}
-                </p>
-                <div className="flex gap-3">
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <p className="text-sm text-gray-600 font-medium">
+                    Date d'expiration :
+                    <span className="block text-lg font-bold text-gray-900 mt-1">
+                      {user.date_expiration ? new Date(user.date_expiration).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      }) : 'Non définie'}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
                   <Button
                     onClick={() => router.push(`/card/${user.id}`)}
-                    className="flex-1"
+                    className="flex-1 gradient-primary h-14 text-lg font-bold shadow-medium hover-lift rounded-2xl"
                   >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Voir ma carte
+                    <Eye className="w-5 h-5 mr-3" />
+                    Utiliser ma carte
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => router.push(`/card/${user.id}`)}
+                    className="h-14 px-8 border-2 border-gray-100 hover:border-primary hover:text-primary font-bold rounded-2xl transition-all"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Télécharger
+                    <Download className="w-5 h-5" />
                   </Button>
                 </div>
               </>
             ) : (
-              <>
-                <div className="flex items-center gap-2 text-orange-600">
-                  <AlertCircle className="w-5 h-5" />
-                  <span className="font-medium">Carte non générée</span>
+              <div className="text-center py-8 space-y-4">
+                <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-10 h-10 text-orange-500" />
                 </div>
-                <p className="text-sm text-gray-600">
-                  Votre carte n'a pas encore été générée. Contactez un administrateur.
-                </p>
-              </>
+                <div className="space-y-2">
+                  <span className="text-xl font-bold text-gray-900 block">Carte indisponible</span>
+                  <p className="text-gray-500 max-w-xs mx-auto">
+                    Votre carte n'a pas encore été validée. Contactez le bureau du Club GI pour finaliser votre adhésion.
+                  </p>
+                </div>
+                <Button variant="outline" className="mt-4 rounded-xl border-2">En savoir plus</Button>
+              </div>
             )}
           </CardContent>
         </Card>
 
         {/* Profile */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mon Profil</CardTitle>
+        <Card className="border-none shadow-medium bg-white/70 backdrop-blur-sm">
+          <CardHeader className="p-8 pb-4">
+            <CardTitle className="text-2xl font-black font-poppins text-gray-900">Mon Profil</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{user.email}</p>
+          <CardContent className="p-8 pt-4 space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Email</p>
+                <p className="font-bold text-gray-900 truncate">{user.email}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Niveau</p>
+                <p className="font-bold text-gray-900">{user.niveau || 'N/A'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Cellule</p>
+                <p className="font-bold text-gray-900">{user.cellule || 'Standard'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Membre depuis</p>
+                <p className="font-bold text-gray-900">2024</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Niveau</p>
-              <p className="font-medium">{user.niveau || 'N/A'}</p>
+
+            <div className="pt-6 border-t border-gray-100">
+              <Button
+                variant="outline"
+                className="w-full h-12 rounded-xl font-bold border-2 hover:bg-gray-50"
+                onClick={() => router.push('/dashboard/profile')}
+              >
+                Modifier mes informations
+              </Button>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Cellule</p>
-              <p className="font-medium">{user.cellule || 'Non définie'}</p>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full mt-4"
-              onClick={() => router.push('/dashboard/profile')}
-            >
-              Modifier mon profil
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -267,18 +294,21 @@ function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Admin Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Tableau de Bord Admin
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 animate-fade-in">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight font-poppins">
+            Console <span className="text-secondary">Admin</span>
           </h1>
-          <p className="text-gray-600 mt-1">
-            Vue d'ensemble de la gestion des membres
+          <p className="text-lg text-gray-500 font-medium">
+            Gérez la communauté et supervisez les adhésions.
           </p>
         </div>
-        <Button onClick={() => router.push('/admin')}>
-          <Shield className="w-4 h-4 mr-2" />
-          Panneau d'administration
+        <Button
+          onClick={() => router.push('/admin')}
+          className="gradient-primary h-14 px-8 text-lg font-bold shadow-medium hover-lift rounded-2xl"
+        >
+          <Shield className="w-6 h-6 mr-3" />
+          Ouvrir le panneau
         </Button>
       </div>
 
@@ -319,41 +349,43 @@ function AdminDashboard() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/admin')}>
-          <CardHeader>
-            <CardTitle className="text-lg">Gestion des Membres</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Voir, modifier et gérer tous les membres du club
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/admin/generate')}>
-          <CardHeader>
-            <CardTitle className="text-lg">Générer des Cartes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Générer des cartes pour un ou plusieurs membres
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/verify')}>
-          <CardHeader>
-            <CardTitle className="text-lg">Scanner QR Code</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Vérifier l'authenticité des cartes d'adhérent
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-slide-up" style={{ animationDelay: '200ms' }}>
+        <ActionCard
+          title="Membres"
+          desc="Gérez la liste complète des membres et leurs statuts."
+          icon={<Users className="w-8 h-8 text-primary" />}
+          onClick={() => router.push('/admin')}
+        />
+        <ActionCard
+          title="Production"
+          desc="Générez et validez les cartes d'adhérent numériques."
+          icon={<CreditCard className="w-8 h-8 text-secondary" />}
+          onClick={() => router.push('/admin/generate')}
+        />
+        <ActionCard
+          title="Scanner"
+          desc="Vérifiez l'authenticité des cartes via QR code."
+          icon={<QrCode className="w-8 h-8 text-accent" />}
+          onClick={() => router.push('/verify')}
+        />
       </div>
     </div>
+  );
+}
+
+function ActionCard({ title, desc, icon, onClick }: { title: string, desc: string, icon: React.ReactNode, onClick: () => void }) {
+  return (
+    <Card className="border-none shadow-medium hover-lift cursor-pointer group bg-white/50 backdrop-blur-sm p-8" onClick={onClick}>
+      <div className="space-y-6 text-center md:text-left">
+        <div className="w-16 h-16 bg-white shadow-soft rounded-2xl flex items-center justify-center group-hover:bg-primary/5 transition-colors mx-auto md:mx-0">
+          {icon}
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-black font-poppins text-gray-900">{title}</h3>
+          <p className="text-gray-500 leading-relaxed font-medium">{desc}</p>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -372,23 +404,23 @@ function StatCard({
   color: string;
 }) {
   const colorMap: any = {
-    blue: 'bg-blue-50',
-    green: 'bg-green-50',
-    purple: 'bg-purple-50',
-    orange: 'bg-orange-50',
+    blue: 'bg-primary/5 text-primary',
+    green: 'bg-success/5 text-success',
+    purple: 'bg-secondary/5 text-secondary',
+    orange: 'bg-accent/5 text-accent',
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+    <Card className="border-none shadow-medium hover-lift overflow-hidden bg-white/70">
+      <CardContent className="p-8">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
               {title}
             </p>
-            <h3 className="text-3xl font-bold">{value}</h3>
+            <h3 className="text-4xl font-black font-poppins text-gray-900">{value}</h3>
           </div>
-          <div className={`p-3 rounded-xl ${colorMap[color] || 'bg-gray-50'}`}>
+          <div className={cn("p-4 rounded-2xl shadow-soft", colorMap[color] || 'bg-gray-50')}>
             {icon}
           </div>
         </div>

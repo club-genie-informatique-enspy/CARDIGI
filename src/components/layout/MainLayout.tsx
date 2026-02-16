@@ -154,21 +154,21 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     // Sidebar content
     const SidebarContent = () => (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-white/50 backdrop-blur-xl">
             {/* Logo */}
-            <div className="p-6 border-b border-gray-200">
-                <Link href="/dashboard" className="flex items-center gap-3">
-                    <div className="relative w-10 h-10">
+            <div className="p-8 border-b border-gray-100">
+                <Link href="/dashboard" className="flex items-center gap-4 group">
+                    <div className="relative w-12 h-12 p-2 bg-white rounded-2xl shadow-soft group-hover:shadow-medium transition-all duration-300">
                         <Image
                             src="/images/logo_gi.png"
                             alt="CARDIGI"
                             fill
-                            className="object-contain"
+                            className="object-contain p-2"
                         />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900">CARDIGI</h1>
-                        <p className="text-xs text-gray-500">Club GI - ENSPY</p>
+                        <h1 className="text-2xl font-black tracking-tight text-gray-900 font-poppins">CARDIGI</h1>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-primary/70">Club GI - ENSPY</p>
                     </div>
                 </Link>
             </div>
@@ -192,60 +192,80 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
 
             {/* Navigation principale */}
-            <nav className="flex-1 p-4 overflow-y-auto">
-                <div className="space-y-1">
-                    {visibleNavItems.map((item) => {
-                        const Icon = item.icon;
-                        // Active state logic improved
-                        const isActive = pathname === item.href ||
-                            (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            <nav className="flex-1 px-4 py-8 overflow-y-auto space-y-6">
+                <div>
+                    <p className="px-4 mb-4 text-[11px] font-bold uppercase tracking-widest text-gray-400">Navigation</p>
+                    <div className="space-y-2">
+                        {visibleNavItems.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = pathname === item.href ||
+                                (item.href !== '/dashboard' && pathname.startsWith(item.href));
 
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={cn(
-                                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                                    'hover:bg-gray-100',
-                                    isActive && 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                )}
-                            >
-                                <Icon className="w-5 h-5" />
-                                <span className="font-medium">{item.title}</span>
-                                {item.badge && (
-                                    <Badge variant="secondary" className="ml-auto">
-                                        {item.badge}
-                                    </Badge>
-                                )}
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={cn(
+                                        'group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                                        isActive
+                                            ? 'gradient-primary text-white shadow-medium hover-lift'
+                                            : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+                                    )}
+                                >
+                                    <div className={cn(
+                                        'p-2 rounded-lg transition-colors',
+                                        isActive ? 'bg-white/20' : 'bg-gray-100 group-hover:bg-white'
+                                    )}>
+                                        <Icon className="w-5 h-5" />
+                                    </div>
+                                    <span className="font-semibold">{item.title}</span>
+                                    {item.badge && (
+                                        <Badge variant="secondary" className={cn(
+                                            "ml-auto text-[10px] font-bold uppercase tracking-tighter px-2 py-0",
+                                            isActive ? "bg-white/20 text-white border-none" : ""
+                                        )}>
+                                            {item.badge}
+                                        </Badge>
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 <div className="my-4 border-t border-gray-200" />
 
-                <div className="space-y-1">
-                    {defaultSettingsItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                <div>
+                    <p className="px-4 mb-4 text-[11px] font-bold uppercase tracking-widest text-gray-400">Préférences</p>
+                    <div className="space-y-2">
+                        {defaultSettingsItems.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = pathname === item.href;
 
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={cn(
-                                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                                    'hover:bg-gray-100',
-                                    isActive && 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                )}
-                            >
-                                <Icon className="w-5 h-5" />
-                                <span className="font-medium">{item.title}</span>
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={cn(
+                                        'group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                                        isActive
+                                            ? 'gradient-primary text-white shadow-medium hover-lift'
+                                            : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+                                    )}
+                                >
+                                    <div className={cn(
+                                        'p-2 rounded-lg transition-colors',
+                                        isActive ? 'bg-white/20' : 'bg-gray-100 group-hover:bg-white'
+                                    )}>
+                                        <Icon className="w-5 h-5" />
+                                    </div>
+                                    <span className="font-semibold">{item.title}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
             </nav>
 
@@ -275,14 +295,14 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="min-h-screen bg-gray-50">
             {/* Sidebar Desktop */}
             <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-                <div className="flex flex-col flex-grow bg-white border-r border-gray-200 overflow-y-auto">
+                <div className="flex flex-col flex-grow bg-white border-r border-gray-100 overflow-y-auto shadow-sm">
                     <SidebarContent />
                 </div>
             </aside>
 
             {/* Sidebar Mobile */}
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-                <SheetContent side="left" className="p-0 w-72">
+                <SheetContent side="left" className="p-0 w-72 border-r-0">
                     <div className="sr-only">
                         <SheetTitle>Menu de Navigation</SheetTitle>
                         <SheetDescription>
@@ -296,24 +316,21 @@ export function MainLayout({ children }: MainLayoutProps) {
             {/* Main Content */}
             <div className="lg:pl-72 flex flex-col min-h-screen">
                 {/* Top Header */}
-                <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
-                    <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+                <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
+                    <div className="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
                         {/* Left: Menu burger + titre */}
-                        <div className="flex items-center gap-4">
-                            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-                                <SheetTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="lg:hidden"
-                                    >
-                                        <Menu className="w-6 h-6" />
-                                    </Button>
-                                </SheetTrigger>
-                            </Sheet>
+                        <div className="flex items-center gap-6">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="lg:hidden hover:bg-gray-100"
+                                onClick={() => setSidebarOpen(true)}
+                            >
+                                <Menu className="w-6 h-6" />
+                            </Button>
 
                             <div className="hidden sm:block">
-                                <h2 className="text-xl font-semibold text-gray-900">
+                                <h2 className="text-2xl font-extrabold text-gray-900 font-poppins tracking-tight">
                                     {getPageTitle()}
                                 </h2>
                             </div>
@@ -371,25 +388,25 @@ export function MainLayout({ children }: MainLayoutProps) {
                             {/* User menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="hidden lg:flex gap-2">
-                                        <Avatar className="h-8 w-8">
+                                    <Button variant="ghost" className="hidden lg:flex gap-3 hover:bg-gray-100 h-12 px-3 rounded-xl transition-all">
+                                        <Avatar className="h-9 w-9 border-2 border-white shadow-soft">
                                             <AvatarImage src={user?.photo_url} />
-                                            <AvatarFallback className="bg-blue-100 text-blue-600">
+                                            <AvatarFallback className="gradient-primary text-white font-bold">
                                                 {user?.prenom?.[0]}{user?.nom?.[0]}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex flex-col items-start">
-                                            <span className="text-sm font-medium">
+                                            <span className="text-sm font-bold text-gray-900">
                                                 {user?.prenom} {user?.nom}
                                             </span>
                                             {isAdmin && (
-                                                <Badge variant="secondary" className="text-xs">Admin</Badge>
+                                                <span className="text-[10px] font-black uppercase text-secondary">Admin</span>
                                             )}
                                         </div>
-                                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-dramatic border-gray-100">
                                     <DropdownMenuLabel>
                                         <div>
                                             <p className="font-medium">{user?.prenom} {user?.nom}</p>
