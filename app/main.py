@@ -14,6 +14,7 @@ import logging
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.v1 import cards, members, verification, auth, stats
+from app.core.database import init_db
 
 # Configuration du logging
 setup_logging()
@@ -23,7 +24,13 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie de l'application"""
     logger.info("🚀 Démarrage de CARDIGI API")
-    # Initialisation Firebase, connexions DB, etc.
+    # Initialisation de la base de données
+    try:
+        init_db()
+        logger.info("✅ Base de données initialisée")
+    except Exception as e:
+        logger.error(f"❌ Échec de l'initialisation de la DB: {e}")
+    
     yield
     logger.info("🛑 Arrêt de CARDIGI API")
 

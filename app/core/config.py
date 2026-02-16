@@ -13,8 +13,10 @@ class Settings(BaseSettings):
     # API
     API_VERSION: str = "v1"
     API_PREFIX: str = "/api/v1"
-    DEBUG: bool = False
     ENVIRONMENT: str = "production"
+    
+    # Database
+    DATABASE_URL: Optional[str] = None
     
     # Security
     SECRET_KEY: str
