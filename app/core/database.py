@@ -29,5 +29,25 @@ def get_db():
         db.close()
 
 def init_db():
-    """Initialise la base de données (création des tables)."""
+    """Initialise la base de données (création des tables et migration simple)."""
     Base.metadata.create_all(bind=engine)
+    
+    # Migration simple pour ajouter les colonnes manquantes
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        try:
+            # PostgreSQL syntax for adding column if not exists
+            if "postgres" in str(engine.url):
+                conn.execute(text("ALTER TABLE members ADD COLUMN IF NOT EXISTS card_generated BOOLEAN DEFAULT FALSE"))
+            else:
+                # SQLite doesn't support IF NOT EXISTS in ALTER TABLE
+                # We check if column exists first
+                cursor = conn.execute(text("PRAGMA table_info(members)"))
+                columns = [row[1] for row in cursor.fetchall()]
+                if "card_generated" not in columns:
+                    conn.execute(text("ALTER TABLE members ADD COLUMN card_generated BOOLEAN DEFAULT FALSE"))
+            
+            conn.commit()
+        except Exception as e:
+            # On ignore les erreurs si la colonne existe déjà (cas du fallback SQLite sans commit)
+            print(f"Note: Tentative d'ajout de colonne skipée ou échouée: {e}")
