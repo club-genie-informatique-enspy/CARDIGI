@@ -3,9 +3,13 @@
 import logging
 import os
 from typing import Optional
-import firebase_admin
-from firebase_admin import credentials, storage
 from pathlib import Path
+from io import BytesIO
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from cloudinary.utils import cloudinary_url
+import requests
 
 from ..core.config import settings
 
@@ -13,79 +17,56 @@ logger = logging.getLogger(__name__)
 
 class StorageService:
     """
-    Service pour gérer les opérations de stockage de fichiers sur Firebase Storage.
-    C'est un singleton pour éviter de réinitialiser l'application Firebase.
+    Service pour gérer les opérations de stockage de fichiers sur Cloudinary.
+    Fallback en mode Mock si Cloudinary n'est pas configuré.
     """
     _instance = None
     
-    # Rendre cette classe un singleton
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(StorageService, cls).__new__(cls)
-            cls._instance._initialize_firebase()
+            cls._instance._initialize_cloudinary()
         return cls._instance
 
-    def _initialize_firebase(self):
-        """Initialise l'application Firebase ou configure le mode Mock."""
+    def _initialize_cloudinary(self):
+        """Initialise Cloudinary ou configure le mode Mock."""
         self.use_mock = settings.ENVIRONMENT == "development"
         self.mock_dir = Path("data/mock_storage")
-        self.bucket = None
+        self.cloudinary_configured = False
 
         if self.use_mock:
             logger.info("Mode Développement: Utilisation du stockage local (Mock).")
             self.mock_dir.mkdir(parents=True, exist_ok=True)
             return
 
-        if not firebase_admin._apps:
-            try:
-                # 1. Vérifier les sources de credentials (JSON ou Chemin)
-                cred = None
-                
-                # Priorité au JSON (utile pour Render/Vercel)
-                if settings.FIREBASE_CREDENTIALS_JSON:
-                    import json
-                    cred_info = json.loads(settings.FIREBASE_CREDENTIALS_JSON)
-                    cred = credentials.Certificate(cred_info)
-                    logger.info("Credentials Firebase chargés depuis la variable JSON.")
-                # Ensuite le chemin du fichier
-                elif settings.FIREBASE_CREDENTIALS_PATH and os.path.exists(settings.FIREBASE_CREDENTIALS_PATH):
-                    cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
-                    logger.info(f"Credentials Firebase chargés depuis: {settings.FIREBASE_CREDENTIALS_PATH}")
-                
-                if not cred:
-                    logger.warning(f"Aucun credentials Firebase trouvé. Basculement en mode Mock.")
-                    self.use_mock = True
-                    self.mock_dir.mkdir(parents=True, exist_ok=True)
-                    return
-                
-                # 2. Initialisation
-                firebase_admin.initialize_app(
-                    cred, 
-                    {
-                        'storageBucket': settings.FIREBASE_STORAGE_BUCKET,
-                        'projectId': settings.FIREBASE_PROJECT_ID
-                    }
-                )
-                logger.info("Firebase Admin SDK initialisé avec succès.")
-            except Exception as e:
-                logger.error(f"Échec initialisation Firebase: {e}. Basculement en mode Mock.")
-                self.use_mock = True
-                self.mock_dir.mkdir(parents=True, exist_ok=True)
-        
-        # 3. Référence au bucket (si pas en mode mock)
-        if not self.use_mock:
-            try:
-                self.bucket = storage.bucket()
-                # Test d'accès basique au bucket si possible
-                if not self.bucket.exists():
-                    logger.error(f"Le bucket {settings.FIREBASE_STORAGE_BUCKET} n'existe pas. Mode Mock activé.")
-                    self.use_mock = True
-            except Exception as e:
-                logger.error(f"Erreur accès bucket: {e}. Mode Mock activé.")
-                self.use_mock = True
+        # Vérifier si Cloudinary est configuré
+        if not all([settings.CLOUDINARY_CLOUD_NAME, settings.CLOUDINARY_API_KEY, settings.CLOUDINARY_API_SECRET]):
+            logger.warning("Cloudinary non configuré. Basculement en mode Mock.")
+            self.use_mock = True
+            self.mock_dir.mkdir(parents=True, exist_ok=True)
+            return
+
+        try:
+            # Configurer Cloudinary
+            cloudinary.config(
+                cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+                api_key=settings.CLOUDINARY_API_KEY,
+                api_secret=settings.CLOUDINARY_API_SECRET,
+                secure=True
+            )
+            
+            # Test de connexion
+            cloudinary.api.ping()
+            self.cloudinary_configured = True
+            logger.info(f"Cloudinary initialisé avec succès. Cloud: {settings.CLOUDINARY_CLOUD_NAME}")
+            
+        except Exception as e:
+            logger.error(f"Échec initialisation Cloudinary: {e}. Basculement en mode Mock.")
+            self.use_mock = True
+            self.mock_dir.mkdir(parents=True, exist_ok=True)
 
     async def upload_file(self, file_data: bytes, destination_path: str, content_type: str) -> Optional[str]:
-        """Télécharge vers Firebase ou sauvegarde localement en mode Mock."""
+        """Télécharge vers Cloudinary ou sauvegarde localement en mode Mock."""
         try:
             if self.use_mock:
                 full_path = self.mock_dir / destination_path
@@ -95,31 +76,53 @@ class StorageService:
                 logger.info(f"Mock Upload: {destination_path}")
                 return f"/api/v1/members/photo/{destination_path}"
 
-            blob = self.bucket.blob(destination_path)
+            # Upload vers Cloudinary
             from fastapi.concurrency import run_in_threadpool
-            await run_in_threadpool(blob.upload_from_string, file_data, content_type=content_type)
-            await run_in_threadpool(blob.make_public) 
-            return blob.public_url
+            
+            # Déterminer le resource_type basé sur le content_type
+            resource_type = "image" if content_type.startswith("image/") else "raw"
+            
+            # Créer un public_id à partir du destination_path (sans extension)
+            public_id = destination_path.rsplit('.', 1)[0] if '.' in destination_path else destination_path
+            
+            result = await run_in_threadpool(
+                cloudinary.uploader.upload,
+                file_data,
+                public_id=public_id,
+                resource_type=resource_type,
+                overwrite=True,
+                invalidate=True
+            )
+            
+            return result.get('secure_url')
 
         except Exception as e:
             logger.error(f"Échec upload {destination_path}: {e}")
             return None
 
     async def card_exists(self, member_id: str) -> bool:
-        """Vérifie si la carte existe (Mock ou Firebase)."""
+        """Vérifie si la carte existe (Mock ou Cloudinary)."""
         if self.use_mock:
             return (self.mock_dir / f"cards/{member_id}/recto.png").exists()
 
-        from fastapi.concurrency import run_in_threadpool
-        recto = self.bucket.blob(f"cards/{member_id}/recto.png")
         try:
-            return await run_in_threadpool(recto.exists)
-        except Exception:
+            from fastapi.concurrency import run_in_threadpool
+            # Vérifier si le recto existe sur Cloudinary
+            public_id = f"cards/{member_id}/recto"
+            result = await run_in_threadpool(
+                cloudinary.api.resource,
+                public_id,
+                resource_type="image"
+            )
+            return result is not None
+        except cloudinary.exceptions.NotFound:
+            return False
+        except Exception as e:
+            logger.error(f"Erreur vérification carte {member_id}: {e}")
             return False
 
     async def get_card_image(self, member_id: str, side: str):
-        """Récupère le contenu de l'image (Mock ou Firebase)."""
-        from io import BytesIO
+        """Récupère le contenu de l'image (Mock ou Cloudinary)."""
         try:
             if self.use_mock:
                 file_path = self.mock_dir / f"cards/{member_id}/{side}.png"
@@ -129,10 +132,19 @@ class StorageService:
                 with open(file_path, "rb") as f:
                     return BytesIO(f.read())
 
+            # Télécharger depuis Cloudinary
             from fastapi.concurrency import run_in_threadpool
-            blob = self.bucket.blob(f"cards/{member_id}/{side}.png")
-            content = await run_in_threadpool(blob.download_as_bytes)
-            return BytesIO(content)
+            public_id = f"cards/{member_id}/{side}"
+            
+            # Obtenir l'URL de l'image
+            url, _ = cloudinary_url(public_id, resource_type="image", format="png")
+            
+            # Télécharger l'image
+            response = await run_in_threadpool(requests.get, url)
+            response.raise_for_status()
+            
+            return BytesIO(response.content)
+            
         except Exception as e:
             logger.error(f"Erreur récupération image {member_id}/{side}: {e}")
             raise e
@@ -140,8 +152,10 @@ class StorageService:
     async def upload_card(self, member_id: str, recto_data: bytes, verso_data: bytes):
         """Upload recto and verso images"""
         # On s'assure que les données sont lues si ce sont des BytesIO
-        if hasattr(recto_data, 'getvalue'): recto_data = recto_data.getvalue()
-        if hasattr(verso_data, 'getvalue'): verso_data = verso_data.getvalue()
+        if hasattr(recto_data, 'getvalue'): 
+            recto_data = recto_data.getvalue()
+        if hasattr(verso_data, 'getvalue'): 
+            verso_data = verso_data.getvalue()
         
         await self.upload_file(recto_data, f"cards/{member_id}/recto.png", "image/png")
         await self.upload_file(verso_data, f"cards/{member_id}/verso.png", "image/png")
@@ -154,14 +168,17 @@ class StorageService:
                 "verso": f"{settings.API_PREFIX}/cards/download/{member_id}/verso"
             }
             
-        base_url = f"https://storage.googleapis.com/{settings.FIREBASE_STORAGE_BUCKET}/cards/{member_id}"
+        # URLs Cloudinary
+        recto_url, _ = cloudinary_url(f"cards/{member_id}/recto", resource_type="image", format="png", secure=True)
+        verso_url, _ = cloudinary_url(f"cards/{member_id}/verso", resource_type="image", format="png", secure=True)
+        
         return {
-            "recto": f"{base_url}/recto.png",
-            "verso": f"{base_url}/verso.png"
+            "recto": recto_url,
+            "verso": verso_url
         }
 
     async def delete_file(self, file_path: str) -> bool:
-        """Suppression de fichier (Mock ou Firebase)."""
+        """Suppression de fichier (Mock ou Cloudinary)."""
         try:
             if self.use_mock:
                 full_path = self.mock_dir / file_path
@@ -169,18 +186,23 @@ class StorageService:
                     full_path.unlink()
                 return True
 
-            blob = self.bucket.blob(file_path)
+            # Supprimer de Cloudinary
             from fastapi.concurrency import run_in_threadpool
-            if await run_in_threadpool(blob.exists):
-                await run_in_threadpool(blob.delete)
+            public_id = file_path.rsplit('.', 1)[0] if '.' in file_path else file_path
+            
+            await run_in_threadpool(
+                cloudinary.uploader.destroy,
+                public_id,
+                invalidate=True
+            )
             return True
+            
         except Exception as e:
             logger.error(f"Échec suppression {file_path}: {e}")
             return False
 
     async def get_file(self, destination_path: str):
         """Récupère le contenu d'un fichier quelconque."""
-        from io import BytesIO
         try:
             if self.use_mock:
                 file_path = self.mock_dir / destination_path
@@ -190,10 +212,19 @@ class StorageService:
                 with open(file_path, "rb") as f:
                     return BytesIO(f.read())
             
+            # Télécharger depuis Cloudinary
             from fastapi.concurrency import run_in_threadpool
-            blob = self.bucket.blob(destination_path)
-            content = await run_in_threadpool(blob.download_as_bytes)
-            return BytesIO(content)
+            public_id = destination_path.rsplit('.', 1)[0] if '.' in destination_path else destination_path
+            
+            # Obtenir l'URL
+            url, _ = cloudinary_url(public_id, resource_type="image", secure=True)
+            
+            # Télécharger
+            response = await run_in_threadpool(requests.get, url)
+            response.raise_for_status()
+            
+            return BytesIO(response.content)
+            
         except Exception as e:
             logger.error(f"Erreur récupération fichier {destination_path}: {e}")
             raise e

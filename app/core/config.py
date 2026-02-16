@@ -41,11 +41,10 @@ class Settings(BaseSettings):
     EXTERNAL_API_URL: str
     EXTERNAL_API_KEY: str
     
-    # Firebase
-    FIREBASE_PROJECT_ID: str
-    FIREBASE_STORAGE_BUCKET: str
-    FIREBASE_CREDENTIALS_PATH: Optional[str] = None
-    FIREBASE_CREDENTIALS_JSON: Optional[str] = None
+    # Cloudinary Storage
+    CLOUDINARY_CLOUD_NAME: Optional[str] = None
+    CLOUDINARY_API_KEY: Optional[str] = None
+    CLOUDINARY_API_SECRET: Optional[str] = None
     
     # CORS
     ALLOWED_ORIGINS: List[str] = [
