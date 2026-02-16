@@ -110,7 +110,7 @@ async def get_member_from_external_api(user_identifier: str) -> Optional[MemberI
         return member
 
     except HTTPException as e:
-        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE"]:
+        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
             logger.info(f"Fallback local pour la récupération de : {user_identifier}")
             return local_member_service.get_member_by_email(user_identifier) if "@" in user_identifier else local_member_service.get_member_by_id(user_identifier)
         raise e
@@ -148,8 +148,8 @@ async def authenticate_member_external(email: str, password: str) -> Optional[Me
         return member_data
 
     except HTTPException as e:
-        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE"]:
-            logger.warning(f"API Externe indisponible. Tentative d'authentification Locale pour {email}")
+        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
+            logger.warning(f"API Externe indisponible ou désactivée. Tentative d'authentification Locale pour {email}")
             return await local_member_service.authenticate_local(email, password)
         raise e
     except Exception as e:
@@ -171,8 +171,8 @@ async def register_member(member_data: MemberRegistration) -> Optional[MemberInD
             return member
             
     except HTTPException as e:
-        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE"]:
-            logger.warning(f"API Externe indisponible pour l'inscription. Enregistrement local 'pending' pour {member_data.email}")
+        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
+            logger.warning(f"API Externe indisponible ou désactivée pour l'inscription. Enregistrement local 'pending' pour {member_data.email}")
             return local_member_service.save_pending_registration(member_data)
         raise e
     except Exception as e:
@@ -193,8 +193,8 @@ async def update_member(member_id: str, update_data: MemberUpdate) -> Optional[M
             return member
             
     except HTTPException as e:
-        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE"]:
-            logger.warning("Échec de mise à jour externe (offline). Mise à jour locale uniquement.")
+        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
+            logger.warning("Modification via stockage local (API externe indisponible ou désactivée).")
             return local_member_service.update_member_local(member_id, update_data)
         raise e
     except Exception as e:
@@ -210,8 +210,8 @@ async def get_all_members() -> Dict[str, Any]:
             return result
             
     except HTTPException as e:
-        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE"]:
-            logger.info("Fallback local pour la liste des membres.")
+        if e.detail in ["CONNECTION_ERROR", "SERVICE_UNAVAILABLE", "LOCAL_ONLY_MODE"]:
+            logger.info("Récupération de la liste des membres via le stockage local.")
             local_list = local_member_service.list_members()
             return {
                 "total": len(local_list),
