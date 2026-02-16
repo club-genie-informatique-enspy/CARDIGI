@@ -47,21 +47,30 @@ class StorageService:
             return
 
         try:
+            # Nettoyer les credentials (supprimer espaces, quotes, etc.)
+            cloud_name = str(settings.CLOUDINARY_CLOUD_NAME).strip().strip('"').strip("'")
+            api_key = str(settings.CLOUDINARY_API_KEY).strip().strip('"').strip("'")
+            api_secret = str(settings.CLOUDINARY_API_SECRET).strip().strip('"').strip("'")
+            
+            logger.info(f"Tentative de connexion à Cloudinary: {cloud_name}")
+            
             # Configurer Cloudinary
             cloudinary.config(
-                cloud_name=settings.CLOUDINARY_CLOUD_NAME,
-                api_key=settings.CLOUDINARY_API_KEY,
-                api_secret=settings.CLOUDINARY_API_SECRET,
+                cloud_name=cloud_name,
+                api_key=api_key,
+                api_secret=api_secret,
                 secure=True
             )
             
             # Test de connexion
             cloudinary.api.ping()
             self.cloudinary_configured = True
-            logger.info(f"Cloudinary initialisé avec succès. Cloud: {settings.CLOUDINARY_CLOUD_NAME}")
+            logger.info(f"✅ Cloudinary initialisé avec succès. Cloud: {cloud_name}")
             
         except Exception as e:
-            logger.error(f"Échec initialisation Cloudinary: {e}. Basculement en mode Mock.")
+            logger.error(f"❌ Échec initialisation Cloudinary: {e}")
+            logger.error(f"Cloud Name fourni: '{settings.CLOUDINARY_CLOUD_NAME}'")
+            logger.error("Vérifiez vos credentials Cloudinary dans les variables d'environnement.")
             self.use_mock = True
             self.mock_dir.mkdir(parents=True, exist_ok=True)
 
