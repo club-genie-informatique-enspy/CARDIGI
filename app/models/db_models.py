@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Date, JSON
+from sqlalchemy import Column, String, Boolean, DateTime, Date, JSON, Integer
 from sqlalchemy.sql import func
 from ..core.database import Base
+from ..core.config import settings
 
 class MemberDB(Base):
     """Modèle SQLAlchemy pour le stockage des membres."""
@@ -26,7 +27,18 @@ class MemberDB(Base):
     
     # Sync & Meta
     pending_sync = Column(Boolean, default=False)
+    card_generated = Column(Boolean, default=False)
     date_adhesion = Column(Date, nullable=False)
     date_expiration = Column(Date, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
+class VerificationDB(Base):
+    """Modèle SQLAlchemy pour l'historique des scans de QR code."""
+    __tablename__ = "verifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    member_id = Column(String, index=True, nullable=False)
+    status = Column(String, nullable=False) # 'success', 'expired', 'invalid'
+    scanned_at = Column(DateTime(timezone=True), server_default=func.now())
+    metadata_json = Column(JSON, nullable=True) # Browser info, location, etc.

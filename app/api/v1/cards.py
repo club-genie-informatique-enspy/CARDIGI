@@ -13,6 +13,8 @@ from app.services.card_generator import CardGenerator
 from app.services.storage_service import StorageService
 from app.services import external_api
 from app.api.deps import get_current_user
+from app.core.database import SessionLocal
+from app.models.db_models import MemberDB
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -51,6 +53,13 @@ async def generate_card(
             card_result["recto"],
             card_result["verso"]
         )
+        
+        # Mettre à jour le statut dans la DB
+        with SessionLocal() as db:
+            db_member = db.query(MemberDB).filter(MemberDB.id == member_id).first()
+            if db_member:
+                db_member.card_generated = True
+                db.commit()
         
         logger.info(f"Carte générée pour {member_card.numero_membre}")
         

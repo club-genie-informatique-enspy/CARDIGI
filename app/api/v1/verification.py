@@ -11,6 +11,9 @@ from jose import jwt, JWTError
 from ...core.config import settings
 from ...services import external_api
 from ...models.member import MemberResponse
+from ...models.db_models import VerificationDB
+from ...core.database import SessionLocal
+from datetime import datetime
 
 # ----------------------------------------------------------------------
 # Route de Vérification de Carte (pour le scan de QR Code)
@@ -41,15 +44,27 @@ async def verify_card_token(token: str):
             
         # 3. Vérifier le statut
         is_valid = member.statut == "actif"
+        status_str = "success" if is_valid else "invalid"
+        
+        # 4. Enregistrer le scan en DB
+        with SessionLocal() as db:
+            scan = VerificationDB(
+                member_id=member.id,
+                status=status_str,
+                scanned_at=datetime.utcnow()
+            )
+            db.add(scan)
+            db.commit()
         
         return {
             "is_valid": is_valid,
             "member": member,
-            "verified_at": settings.datetime.utcnow() if hasattr(settings, 'datetime') else None,
+            "verified_at": datetime.utcnow(),
             "message": "Membre actif" if is_valid else f"Adhésion {member.statut}"
         }
 
     except JWTError:
+        # On pourrait loggate les échecs de token ici aussi
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Le jeton de la carte est invalide ou a expiré."
@@ -71,6 +86,17 @@ async def verify_by_numero(data: dict):
     if not member:
          raise HTTPException(status_code=404, detail="Membre non trouvé")
          
+    # Enregistrer la vérification manuelle
+    with SessionLocal() as db:
+        scan = VerificationDB(
+            member_id=member.id,
+            status="success" if member.statut == "actif" else "invalid",
+            scanned_at=datetime.utcnow(),
+            metadata_json={"method": "manual"}
+        )
+        db.add(scan)
+        db.commit()
+    
     return {
         "is_valid": member.statut == "actif",
         "member": member
