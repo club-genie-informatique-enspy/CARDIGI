@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,13 +15,16 @@ import {
   Calendar,
   CreditCard,
   User,
-  Mail
+  Mail,
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import type { VerificationResult } from '@/types/member';
 
 export default function VerifyPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = params.token as string;
   const manualNumero = searchParams.get('numero');
 
@@ -226,10 +229,29 @@ export default function VerifyPage() {
             </CardContent>
           </Card>
 
-          {/* Timestamp vérification */}
           <p className="text-center text-sm text-gray-500">
             Vérifié le {new Date(result.verified_at).toLocaleString('fr-FR')}
           </p>
+
+          <div className="flex flex-col gap-3 pt-4">
+            <Button
+              onClick={() => router.push('/verify')}
+              className="w-full flex items-center justify-center gap-2"
+              variant="default"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Effectuer une autre vérification
+            </Button>
+
+            <Button
+              onClick={() => router.push('/')}
+              className="w-full flex items-center justify-center gap-2"
+              variant="outline"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Retour à l'accueil
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -272,12 +294,24 @@ export default function VerifyPage() {
           </CardContent>
         </Card>
 
-        <Button
-          onClick={() => window.location.href = '/'}
-          className="w-full"
-        >
-          Retour à l'accueil
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button
+            onClick={() => router.push('/verify')}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Réessayer une vérification
+          </Button>
+
+          <Button
+            onClick={() => router.push('/')}
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour à l'accueil
+          </Button>
+        </div>
       </div>
     </div>
   );
