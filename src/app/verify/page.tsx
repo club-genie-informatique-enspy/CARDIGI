@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QrCode, Search } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { QrCode, Search, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Dynamically import QRScanner to avoid SSR issues
 const QRScanner = dynamic(() => import('@/components/QRScanner'), {
@@ -70,10 +72,19 @@ export default function VerifyPage() {
               </Button>
             </div>
           ) : (
-            <QRScanner
-              onScanSuccess={handleScanSuccess}
-              onScanError={(error) => console.error('Scan error:', error)}
-            />
+            <ErrorBoundary fallback={
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Erreur lors du chargement du scanner. Veuillez rafraîchir la page.
+                </AlertDescription>
+              </Alert>
+            }>
+              <QRScanner
+                onScanSuccess={handleScanSuccess}
+                onScanError={(error) => console.error('Scan error:', error)}
+              />
+            </ErrorBoundary>
           )}
         </CardContent>
       </Card>

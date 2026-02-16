@@ -32,9 +32,9 @@ export const CardVerso: React.FC<CardVersoProps> = ({
       className={cn(
         "relative w-full aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl",
         "bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col",
+        "max-w-[856px] mx-auto", // Responsive max width
         className
       )}
-      style={{ maxWidth: '856px' }}
     >
       {/* Bande supérieure */}
       <div className="relative bg-gradient-to-r from-[#001f3f] to-[#003366] px-2 sm:px-6 py-1.5 sm:py-3 border-b-2 border-orange-500 shrink-0">

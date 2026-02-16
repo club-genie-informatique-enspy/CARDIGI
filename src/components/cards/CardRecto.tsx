@@ -40,9 +40,9 @@ export const CardRecto: React.FC<CardRectoProps> = ({ member, className }) => {
       className={cn(
         "relative w-full aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl flex flex-col",
         "bg-gradient-to-br from-white via-blue-50 to-gray-100", // Light Theme
+        "max-w-[856px] mx-auto", // Responsive max width
         className
       )}
-      style={{ maxWidth: '856px' }}
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none">

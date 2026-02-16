@@ -19,10 +19,21 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     const qrCodeRegionId = 'qr-reader';
 
     const startScanning = async () => {
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined' || typeof document === 'undefined') {
+            setError('Le scanner n\'est pas disponible dans cet environnement');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
+            // Check if camera is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Votre navigateur ne supporte pas l\'accès à la caméra');
+            }
+
             // Initialize scanner if not already done
             if (!scannerRef.current) {
                 scannerRef.current = new Html5Qrcode(qrCodeRegionId);
@@ -53,7 +64,19 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
             setIsScanning(true);
         } catch (err: any) {
-            const errorMsg = err.message || 'Impossible d\'accéder à la caméra';
+            console.error('Scanner error:', err);
+            let errorMsg = 'Impossible d\'accéder à la caméra';
+
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                errorMsg = 'Permission d\'accès à la caméra refusée. Veuillez autoriser l\'accès dans les paramètres de votre navigateur.';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                errorMsg = 'Aucune caméra détectée sur cet appareil.';
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                errorMsg = 'La caméra est déjà utilisée par une autre application.';
+            } else if (err.message) {
+                errorMsg = err.message;
+            }
+
             setError(errorMsg);
             if (onScanError) {
                 onScanError(errorMsg);

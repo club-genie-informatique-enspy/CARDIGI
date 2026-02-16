@@ -41,7 +41,7 @@ export const CardFlip: React.FC<CardFlipProps> = ({
   }, [isFlipped]);
 
   return (
-    <div className={cn("w-full max-w-3xl mx-auto", className)}>
+    <div className={cn("w-full max-w-full px-2 sm:px-4", className)}>
       {/* Bouton pour retourner la carte */}
       <div className="flex justify-center mb-6">
         <Button
