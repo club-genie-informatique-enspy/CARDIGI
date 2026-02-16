@@ -7,6 +7,7 @@ from typing import Annotated
 from ...core import security
 from ...core.config import settings
 from ...services import external_api
+from ...services.email_service import email_service
 from ...models.member import Token, MemberInDB, MemberRegistration, AdminCreation
 from ...api.deps import get_current_user
 
@@ -81,6 +82,16 @@ async def register_member(
             detail="Une erreur est survenue lors de l'inscription."
         )
     
+    # Envoyer l'email de bienvenue (en arrière-plan pour ne pas bloquer la réponse)
+    from fastapi import BackgroundTasks
+    # On l'injecte via Depends dans l'endpoint pour de meilleures pratiques, 
+    # mais ici on va le faire directement pour rester simple
+    async def send_email_wrapper():
+        await email_service.send_welcome_email(user.email, user.prenom, member_data.password)
+    
+    import asyncio
+    asyncio.create_task(send_email_wrapper())
+    
     # Générer le token pour l'utilisateur fraîchement inscrit
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)
     
@@ -151,6 +162,13 @@ async def create_admin(
     # Sauvegarder les modifications de rôle localement (important pour le fallback offline)
     from ...services.local_member_service import local_member_service
     local_member_service.upsert_member(user)
+    
+    # Envoyer l'email de bienvenue pour l'admin
+    async def send_admin_email():
+        await email_service.send_welcome_email(user.email, user.prenom, admin_data.password)
+    
+    import asyncio
+    asyncio.create_task(send_admin_email())
     
     # Générer le token pour l'admin
     access_token_expires = security.timedelta(minutes=settings.JWT_EXPIRATION_HOURS * 60)

@@ -13,10 +13,23 @@ class Settings(BaseSettings):
     # API
     API_VERSION: str = "v1"
     API_PREFIX: str = "/api/v1"
+    DEBUG: bool = False
     ENVIRONMENT: str = "production"
     
     # Database
     DATABASE_URL: Optional[str] = None
+    
+    # Mail
+    MAIL_USERNAME: Optional[str] = None
+    MAIL_PASSWORD: Optional[str] = None
+    MAIL_FROM: Optional[str] = None
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_FROM_NAME: str = "CARDIGI - Club GI"
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+    USE_CREDENTIALS: bool = True
+    VALIDATE_CERTS: bool = True
     
     # Security
     SECRET_KEY: str
@@ -55,5 +68,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 settings = Settings()

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez CARDIGI</title>
+    <style>
+        body {
+            font-family: 'Poppins', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .content {
+            padding: 40px 30px;
+            line-height: 1.6;
+        }
+        .content h2 {
+            color: #1e293b;
+            font-size: 22px;
+            margin-top: 0;
+        }
+        .credentials-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid #4f46e5;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .credentials-box p {
+            margin: 5px 0;
+            font-size: 15px;
+        }
+        .credentials-box strong {
+            color: #0f172a;
+        }
+        .button-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+        .button {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white !important;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+        .logo-placeholder {
+            font-size: 24px;
+            font-weight: 900;
+            color: #fbbf24;
+            margin-bottom: 15px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="logo-placeholder">CARDIGI</span>
+            <h1>Bienvenue parmi nous !</h1>
+        </div>
+        <div class="content">
+            <h2>Félicitations {{ prenom }},</h2>
+            <p>Votre compte <strong>CARDIGI</strong> a été créé avec succès par le Club Génie Informatique.</p>
+            <p>Vous pouvez désormais accéder à votre carte d'adhérent numérique et gérer votre profil en toute simplicité.</p>
+            
+            <div class="credentials-box">
+                <p>Voici vos identifiants de connexion :</p>
+                <p><strong>Email :</strong> {{ email }}</p>
+                <p><strong>Mot de passe :</strong> {{ password }}</p>
+            </div>
+            
+            <p>Pour des raisons de sécurité, nous vous conseillons de modifier votre mot de passe dès votre première connexion.</p>
+            
+            <div class="button-container">
+                <a href="https://cardigi-orcin.vercel.app/login" class="button">Accéder à mon espace</a>
+            </div>
+            
+            <p>Besoin d'aide ? N'hésitez pas à répondre à cet email.</p>
+            <p>À bientôt,<br>L'équipe du Club GI</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Club Génie Informatique - ENSPY. Tous droits réservés.</p>
+            <p>École Nationale Supérieure Polytechnique de Yaoundé</p>
+        </div>
+    </div>
+</body>
+</html>
