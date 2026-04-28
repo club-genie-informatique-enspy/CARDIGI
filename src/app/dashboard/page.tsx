@@ -282,7 +282,7 @@ function AdminDashboard() {
         totalMembers: membersData.total,
         activeMembers: membersData.members.filter((m: any) => m.statut === 'actif').length,
         generatedCards: membersData.total, // Mock
-        verifications: verifData.total_verifications,
+        verifications: verifData.total_scans,
       });
     } catch (err) {
       console.error('Error loading admin stats:', err);

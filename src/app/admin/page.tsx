@@ -37,7 +37,7 @@ export default function AdminDashboard() {
                 setStats({
                     totalMembers: memData.total,
                     generatedCards: 142, // Mocked
-                    activeVerifications: verifData.total_verifications,
+                    activeVerifications: verifData.total_scans,
                     pendingValidation: 5
                 });
             } catch (error) {
