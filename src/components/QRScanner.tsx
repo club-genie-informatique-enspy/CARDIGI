@@ -140,21 +140,23 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         <div className="space-y-4">
             {/* Scanner Region */}
             <div className="relative">
+                {/* IMPORTANT: ne jamais rendre d'enfants dans #qr-reader.
+                   html5-qrcode gère lui-même le DOM interne; sinon React/html5-qrcode se battent (removeChild). */}
+                {!isScanning && (
+                    <div className="absolute inset-0 flex items-center justify-center h-[300px] bg-gray-100 rounded-lg pointer-events-none">
+                        <div className="text-center">
+                            <Camera className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                            <p className="text-gray-500">
+                                Cliquez sur "Démarrer" pour scanner
+                            </p>
+                        </div>
+                    </div>
+                )}
                 <div
                     id={qrCodeRegionId}
                     className="rounded-lg overflow-hidden border-2 border-gray-200"
                     style={{ minHeight: isScanning ? 'auto' : '300px' }}
                 >
-                    {!isScanning && (
-                        <div className="flex items-center justify-center h-[300px] bg-gray-100">
-                            <div className="text-center">
-                                <Camera className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                                <p className="text-gray-500">
-                                    Cliquez sur "Démarrer" pour scanner
-                                </p>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
