@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Camera, CameraOff, Loader2 } from 'lucide-react';
@@ -15,7 +14,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     const [isScanning, setIsScanning] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const scannerRef = useRef<Html5Qrcode | null>(null);
+    // On évite d'importer html5-qrcode au top-level (peut casser en environnement SSR/bundling).
+    const scannerRef = useRef<any>(null);
     const qrCodeRegionId = 'qr-reader';
 
     const startScanning = async () => {
@@ -45,7 +45,14 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 throw new Error('Élément du scanner non trouvé dans le DOM');
             }
 
-            scannerRef.current = new Html5Qrcode(qrCodeRegionId);
+            // Import dynamique pour éviter les crashes au rendu (html5-qrcode dépend de window/document).
+            const mod: any = await import('html5-qrcode');
+            const Html5QrcodeCtor = mod?.Html5Qrcode || mod?.default?.Html5Qrcode || mod?.default;
+            if (!Html5QrcodeCtor) {
+                throw new Error('Bibliothèque de scan QR indisponible (import échoué)');
+            }
+
+            scannerRef.current = new Html5QrcodeCtor(qrCodeRegionId);
 
             const config = {
                 fps: 10,
@@ -56,7 +63,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
             await scannerRef.current.start(
                 { facingMode: 'environment' },
                 config,
-                (decodedText) => {
+                (decodedText: string) => {
                     onScanSuccess(decodedText);
                     stopScanning();
                 },

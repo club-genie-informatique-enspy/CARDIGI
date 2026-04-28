@@ -72,14 +72,7 @@ export default function VerifyPage() {
               </Button>
             </div>
           ) : (
-            <ErrorBoundary fallback={
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Erreur lors du chargement du scanner. Veuillez rafraîchir la page.
-                </AlertDescription>
-              </Alert>
-            }>
+            <ErrorBoundary>
               <QRScanner
                 onScanSuccess={handleScanSuccess}
                 onScanError={(error) => console.error('Scan error:', error)}
