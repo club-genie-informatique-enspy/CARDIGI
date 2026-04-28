@@ -29,10 +29,18 @@ export default function VerifyPage() {
   };
 
   const handleScanSuccess = (decodedText: string) => {
-    // Extract token from URL or use directly
-    const token = decodedText.includes('/verify/')
-      ? decodedText.split('/verify/').pop()
-      : decodedText;
+    const text = (decodedText || '').trim();
+
+    // 1) Cas idéal: on extrait un JWT (xxx.yyy.zzz) depuis n'importe quelle chaîne/URL
+    const jwtMatch = text.match(/([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/);
+    const tokenFromJwt = jwtMatch?.[1];
+
+    // 2) Sinon: on tente d'extraire depuis une URL /verify/<token>
+    const tokenFromPath = text.includes('/verify/')
+      ? text.split('/verify/').pop()
+      : text;
+
+    const token = (tokenFromJwt || tokenFromPath || '').trim().replace(/\/+$/, '');
 
     if (token) {
       router.push(`/verify/${token}`);
