@@ -9,7 +9,10 @@ from weasyprint import HTML, CSS
 from pathlib import Path
 from io import BytesIO
 from PIL import Image
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 from app.models.member import MemberCard
 from app.services.qr_generator import QRCodeGenerator
@@ -78,10 +81,6 @@ class CardGenerator:
         # Rendre le template
         html_content = self._render_template("card_recto.html", context)
         
-        # DEBUG: Save HTML to file
-        with open(f"debug_recto_{member.id}.html", "w") as f:
-            f.write(html_content)
-        
         # Générer PDF
         pdf_buffer = BytesIO()
         HTML(string=html_content, base_url=str(self.static_dir)).write_pdf(
@@ -97,11 +96,12 @@ class CardGenerator:
     def generate_card_verso(self, member: MemberCard) -> BytesIO:
         """Génère le verso de la carte avec QR code"""
         
-        # Générer le QR code
+        # Générer le QR code avec expiration alignée sur la date d'adhésion du membre
         qr_buffer = self.qr_generator.generate_qr_code(
             member.id,
             member.numero_membre,
-            size=250
+            size=250,
+            date_expiration=member.date_expiration  # QR valide jusqu'à la fin d'adhésion
         )
         qr_base64 = self.qr_generator.qr_to_base64(qr_buffer)
         

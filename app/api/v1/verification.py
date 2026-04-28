@@ -93,9 +93,10 @@ async def verify_by_numero(data: dict):
         scan = VerificationDB(
             member_id=member.id,
             status="success" if is_valid else "invalid",
-            scanned_at=datetime.utcnow(),
-            metadata_json={"method": "manual"}
+            scanned_at=datetime.utcnow()
         )
+        # Assigner séparément la colonne JSON pour garantir la compatibilité SQLAlchemy
+        scan.metadata_json = {"method": "manual", "numero_membre": numero}
         db.add(scan)
         db.commit()
     

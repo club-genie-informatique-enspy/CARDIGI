@@ -26,23 +26,25 @@ class EmailService:
         )
         self.fastmail = FastMail(self.conf)
 
-    async def send_welcome_email(self, email: str, prenom: str, password: str):
-        """Envoie un email de bienvenue à un nouveau membre."""
+    async def send_welcome_email(self, email: str, prenom: str):
+        """Envoie un email de bienvenue à un nouveau membre.
+        
+        Note de sécurité : le mot de passe n'est jamais transmis dans l'email.
+        """
         # Si le mode local-only ou dév sans SMTP est actif, on logge simplement
         if not settings.MAIL_USERNAME or not settings.MAIL_PASSWORD:
             logger.warning(f"SMTP non configuré. Email de bienvenue pour {email} non envoyé.")
-            logger.info(f"Détails du mail (MOCK) : {{'prenom': {prenom}, 'email': {email}, 'password': {password}}}")
+            logger.info(f"Détails du mail (MOCK) : {{'prenom': {prenom}, 'email': {email}}}")
             return
 
         template_body = {
             "prenom": prenom,
             "email": email,
-            "password": password,
             "current_year": datetime.now().year
         }
 
         message = MessageSchema(
-            subject="Bienvenue chez CARDIGI - Vos identifiants",
+            subject="Bienvenue chez CARDIGI - Club GI ENSPY",
             recipients=[email],
             template_body=template_body,
             subtype=MessageType.html

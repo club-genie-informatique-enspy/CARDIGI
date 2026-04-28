@@ -12,7 +12,8 @@ from qrcode.image.styles.colormasks import SolidFillColorMask
 from io import BytesIO
 from PIL import Image
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from typing import Optional
 from jose import jwt
 from app.core.config import settings
 
@@ -22,9 +23,24 @@ class QRCodeGenerator:
     def __init__(self):
         self.base_url = "https://cardigi.enspy.club/verify"
     
-    def generate_verification_token(self, member_id: str, numero_membre: str) -> str:
-        """Génère un token JWT pour la vérification"""
-        expiration = datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
+    def generate_verification_token(
+        self,
+        member_id: str,
+        numero_membre: str,
+        date_expiration: Optional[date] = None
+    ) -> str:
+        """Génère un token JWT pour la vérification de carte.
+        
+        L'expiration est alignée sur la date d'expiration de l'adhésion du membre.
+        Si non fournie, le token expire dans 1 an par défaut.
+        """
+        if date_expiration:
+            # Aligner l'expiration du QR sur la date d'expiration du membre
+            expiration = datetime.combine(date_expiration, datetime.max.time())
+        else:
+            # Fallback : 1 an à partir d'aujourd'hui
+            expiration = datetime.utcnow() + timedelta(days=365)
+        
         payload = {
             "member_id": member_id,
             "numero_membre": numero_membre,
@@ -39,12 +55,13 @@ class QRCodeGenerator:
         member_id: str,
         numero_membre: str,
         size: int = 300,
-        border: int = 2
+        border: int = 2,
+        date_expiration: Optional[date] = None
     ) -> BytesIO:
-        """Génère un QR code stylisé"""
+        """Génère un QR code stylisé dont la validité est liée à l'adhésion du membre."""
         
-        # Créer le token de vérification
-        token = self.generate_verification_token(member_id, numero_membre)
+        # Créer le token de vérification (expiration = date_expiration du membre)
+        token = self.generate_verification_token(member_id, numero_membre, date_expiration)
         verification_url = f"{self.base_url}/{token}"
         
         # Configurer le QR code

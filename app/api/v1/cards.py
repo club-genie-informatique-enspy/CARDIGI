@@ -21,6 +21,34 @@ logger = logging.getLogger(__name__)
 card_generator = CardGenerator()
 storage_service = StorageService()
 
+# -------------------------------------------------------------------
+# IMPORTANT : Les routes statiques (/generate/bulk) doivent être
+# déclarées AVANT les routes dynamiques (/generate/{member_id})
+# pour éviter que FastAPI interprète "bulk" comme un member_id.
+# -------------------------------------------------------------------
+
+@router.post("/generate/bulk", response_model=dict)
+async def generate_bulk_cards(
+    member_ids: List[str],
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Génère des cartes en masse (max 100 par requête)"""
+    if len(member_ids) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum 100 cartes par requête"
+        )
+    
+    background_tasks.add_task(process_bulk_generation, member_ids)
+    
+    return {
+        "success": True,
+        "message": f"Génération de {len(member_ids)} cartes en cours",
+        "count": len(member_ids)
+    }
+
+
 @router.post("/generate/{member_id}", response_model=dict)
 async def generate_card(
     member_id: str,
@@ -46,7 +74,7 @@ async def generate_card(
         # Générer la carte
         card_result = card_generator.generate_full_card(member_card)
         
-        # Upload vers Firebase en arrière-plan
+        # Upload vers Cloudinary en arrière-plan
         background_tasks.add_task(
             storage_service.upload_card,
             member_id,
@@ -158,26 +186,7 @@ async def get_card_metadata(
         "updated_at": urls.get("updated_at")
     }
 
-@router.post("/generate/bulk", response_model=dict)
-async def generate_bulk_cards(
-    member_ids: List[str],
-    background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
-):
-    """Génère des cartes en masse"""
-    if len(member_ids) > 100:
-        raise HTTPException(
-            status_code=400,
-            detail="Maximum 100 cartes par requête"
-        )
-    
-    background_tasks.add_task(process_bulk_generation, member_ids)
-    
-    return {
-        "success": True,
-        "message": f"Génération de {len(member_ids)} cartes en cours",
-        "count": len(member_ids)
-    }
+
 
 async def fetch_member_data(member_id: str) -> dict:
     """Récupère les données depuis l'API externe"""

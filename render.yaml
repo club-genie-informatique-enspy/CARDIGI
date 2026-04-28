@@ -16,12 +16,17 @@ services:
       - key: API_PREFIX
         value: /api/v1
       - key: SECRET_KEY
+        # ⚠️  NE PAS utiliser generateValue en production !
+        # Un nouveau SECRET_KEY invalide TOUS les tokens JWT existants à chaque déploiement.
+        # → Définir une valeur fixe et sécurisée dans les Secrets de Render.
         generateValue: true
       - key: JWT_ALGORITHM
         value: HS256
       - key: JWT_EXPIRATION_HOURS
         value: 24
       - key: ADMIN_CREATION_SECRET
+        # ⚠️  OBLIGATOIRE : définir une valeur forte dans les Secrets de Render.
+        # La valeur par défaut "CHANGE_ME_IN_PRODUCTION" permet à n'importe qui de créer un admin !
         sync: false
       - key: EXTERNAL_API_URL
         value: http://localhost:8080/api

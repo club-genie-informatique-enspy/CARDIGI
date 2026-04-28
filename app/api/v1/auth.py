@@ -1,6 +1,4 @@
-# backend/app/api/v1/auth.py
-
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
@@ -9,12 +7,18 @@ from ...core.config import settings
 from ...services import external_api
 from ...services.email_service import email_service
 from ...models.member import Token, MemberInDB, MemberRegistration, AdminCreation
-from ...api.deps import get_current_user
+from ...api.deps import get_current_admin, get_current_user
 
 router = APIRouter()
 
+def get_limiter():
+    """Récupère le limiter depuis l'app state (injecté via main.py)."""
+    from app.main import limiter
+    return limiter
+
 @router.post("/login", response_model=Token, summary="Authentification et émission du JWT")
 async def login_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
     """
@@ -60,6 +64,7 @@ async def verify_token(
     return current_user
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED, summary="Inscription d'un nouveau membre")
 async def register_member(
+    request: Request,
     member_data: MemberRegistration,
     background_tasks: BackgroundTasks
 ):
@@ -84,11 +89,11 @@ async def register_member(
         )
     
     # Envoyer l'email de bienvenue en arrière-plan (non-bloquant)
+    # On ne transmet PAS le mot de passe en clair dans l'email (bonne pratique sécurité)
     background_tasks.add_task(
         email_service.send_welcome_email, 
         user.email, 
-        user.prenom, 
-        member_data.password
+        user.prenom
     )
     
     # Générer le token pour l'utilisateur fraîchement inscrit
@@ -164,11 +169,11 @@ async def create_admin(
     local_member_service.upsert_member(user)
     
     # Envoyer l'email de bienvenue pour l'admin en arrière-plan
+    # On ne transmet PAS le mot de passe en clair dans l'email (bonne pratique sécurité)
     background_tasks.add_task(
         email_service.send_welcome_email,
         user.email,
-        user.prenom,
-        admin_data.password
+        user.prenom
     )
     
     # Générer le token pour l'admin

@@ -140,8 +140,8 @@ class LocalMemberService:
         return member_data
 
     def _to_pydantic(self, db_member: MemberDB) -> MemberInDB:
-        """Convertit un modèle SQLAlchemy en modèle Pydantic."""
-        return MemberInDB.from_orm(db_member)
+        """Convertit un modèle SQLAlchemy en modèle Pydantic (compatible Pydantic v2)."""
+        return MemberInDB.model_validate(db_member)
 
 # Singleton
 local_member_service = LocalMemberService()

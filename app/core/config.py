@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: Optional[str] = None
     CLOUDINARY_API_KEY: Optional[str] = None
     CLOUDINARY_API_SECRET: Optional[str] = None
+
+    # Firebase Storage (legacy — conservé pour compatibilité, non utilisé en production)
+    FIREBASE_STORAGE_BUCKET: Optional[str] = None
     
     # CORS
     ALLOWED_ORIGINS: List[str] = [
