@@ -1,6 +1,6 @@
 # backend/app/api/v1/verification.py
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,7 +10,6 @@ router = APIRouter()
 from jose import jwt, JWTError
 from ...core.config import settings
 from ...services import external_api
-from ...models.member import MemberResponse
 from ...models.db_models import VerificationDB
 from ...core.database import SessionLocal
 from datetime import datetime
@@ -25,50 +24,87 @@ async def verify_card_token(token: str):
     Endpoint appelé par le scanner de QR code.
     Il valide le token et retourne les données du membre si la carte est active.
     """
-    try:
-        # 1. Décoder le token
-        payload = jwt.decode(
-            token, 
-            settings.SECRET_KEY, 
-            algorithms=[settings.JWT_ALGORITHM]
-        )
-        
-        member_id = payload.get("member_id")
-        if not member_id:
-            raise HTTPException(status_code=400, detail="Token invalide: ID membre manquant")
-            
-        # 2. Récupérer le membre
-        member = await external_api.get_member_from_external_api(member_id)
-        if not member:
-            raise HTTPException(status_code=404, detail="Membre non trouvé")
-            
-        # 3. Vérifier le statut
-        is_valid = member.statut == "actif"
-        status_str = "success" if is_valid else "invalid"
-        
-        # 4. Enregistrer le scan en DB
+    now = datetime.utcnow()
+
+    def log_scan(member_id: str, status_str: str, metadata: dict | None = None) -> None:
         with SessionLocal() as db:
             scan = VerificationDB(
-                member_id=member.id,
+                member_id=member_id,
                 status=status_str,
-                scanned_at=datetime.utcnow()
+                scanned_at=now,
             )
+            if metadata is not None:
+                scan.metadata_json = metadata
             db.add(scan)
             db.commit()
-        
+
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+
+        member_id = payload.get("member_id")
+        if not member_id:
+            # Format token OK mais payload incomplet
+            return {
+                "valid": False,
+                "verified_at": now.isoformat(),
+                "reason": "token_invalid",
+                "message": "Token invalide: ID membre manquant",
+            }
+
+        # Récupérer le membre (via API externe)
+        member = await external_api.get_member_from_external_api(member_id)
+        if not member:
+            # On évite 404 (UI attend un résultat), on renvoie un échec explicite.
+            return {
+                "valid": False,
+                "verified_at": now.isoformat(),
+                "reason": "token_invalid",
+                "message": "Membre non trouvé",
+            }
+
+        is_valid = member.statut == "actif"
+        reason = None if is_valid else "member_inactive"
+        status_str = "success" if is_valid else "invalid"
+
+        # Log en DB (scan QR)
+        log_scan(member.id, status_str, metadata={"method": "qr"})
+
+        # On expose des infos utiles au frontend (alignées avec VerificationResult)
+        iat = payload.get("iat")
+        exp = payload.get("exp")
+        card_block = None
+        try:
+            card_block = {
+                "generated_at": datetime.fromtimestamp(iat).isoformat() if isinstance(iat, (int, float)) else now.isoformat(),
+                "qr_expires_at": datetime.fromtimestamp(exp).isoformat() if isinstance(exp, (int, float)) else now.isoformat(),
+            }
+        except Exception:
+            card_block = None
+
         return {
             "valid": is_valid,
             "member": member,
-            "verified_at": datetime.utcnow().isoformat(),
-            "message": "Membre actif" if is_valid else f"Adhésion {member.statut}"
+            "card": card_block,
+            "verified_at": now.isoformat(),
+            "reason": reason,
+            "message": "Membre actif" if is_valid else f"Adhésion {member.statut}",
         }
 
-    except JWTError:
-        # On pourrait loggate les échecs de token ici aussi
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Le jeton de la carte est invalide ou a expiré."
-        )
+    except JWTError as e:
+        # IMPORTANT: on renvoie un 200 avec valid=false pour que l'UI affiche "Carte invalide"
+        msg = str(e) or "JWT error"
+        reason = "token_expired" if "expired" in msg.lower() else "token_invalid"
+        # Token invalide: on ne connaît pas le member_id => on ne log pas (ou log générique si besoin)
+        return {
+            "valid": False,
+            "verified_at": now.isoformat(),
+            "reason": reason,
+            "message": "Le jeton de la carte est invalide ou a expiré.",
+        }
     except Exception as e:
         logger.error(f"Erreur vérification: {e}")
         raise HTTPException(status_code=500, detail="Erreur interne de vérification")
@@ -87,6 +123,7 @@ async def verify_by_numero(data: dict):
          raise HTTPException(status_code=404, detail="Membre non trouvé")
          
     is_valid = member.statut == "actif"
+    reason = None if is_valid else "member_inactive"
     
     # Enregistrer la vérification manuelle
     with SessionLocal() as db:
@@ -104,5 +141,6 @@ async def verify_by_numero(data: dict):
         "valid": is_valid,
         "member": member,
         "verified_at": datetime.utcnow().isoformat(),
+        "reason": reason,
         "message": "Membre actif" if is_valid else f"Adhésion {member.statut}"
     }

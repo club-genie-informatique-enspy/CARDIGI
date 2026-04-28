@@ -21,7 +21,9 @@ class QRCodeGenerator:
     """Générateur de QR codes sécurisés"""
     
     def __init__(self):
-        self.base_url = "https://cardigi.enspy.club/verify"
+        base = (getattr(settings, "FRONTEND_BASE_URL", "") or "").rstrip("/")
+        # Le QR doit pointer vers le frontend (page /verify), pas vers le backend.
+        self.base_url = f"{base}/verify" if base else "https://cardigi-orcin.vercel.app/verify"
     
     def generate_verification_token(
         self,

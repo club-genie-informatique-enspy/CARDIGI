@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     # External API
     EXTERNAL_API_URL: str
     EXTERNAL_API_KEY: str
+
+    # Frontend / Public URLs (pour QR codes, liens publics, etc.)
+    # Exemples:
+    # - FRONTEND_BASE_URL=https://cardigi.enspy.club
+    # - FRONTEND_BASE_URL=http://localhost:3000
+    FRONTEND_BASE_URL: str = "https://cardigi.enspy.club"
     
     # Cloudinary Storage
     CLOUDINARY_CLOUD_NAME: Optional[str] = None
