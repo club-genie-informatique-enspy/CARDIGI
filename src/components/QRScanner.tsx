@@ -16,7 +16,44 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     const [isLoading, setIsLoading] = useState(false);
     // On évite d'importer html5-qrcode au top-level (peut casser en environnement SSR/bundling).
     const scannerRef = useRef<any>(null);
+    const isMountedRef = useRef(true);
+    const isStoppingRef = useRef(false);
     const qrCodeRegionId = 'qr-reader';
+
+    const safeStopAndClear = async (opts?: { skipStateUpdates?: boolean }) => {
+        if (!scannerRef.current || isStoppingRef.current) return;
+        isStoppingRef.current = true;
+
+        try {
+            try {
+                const state = await scannerRef.current.getState?.();
+                if (state === 2) {
+                    await scannerRef.current.stop();
+                }
+            } catch (e) {
+                // stop() peut échouer si le scanner n'a pas démarré complètement
+                console.warn('Stop error (ignored):', e);
+            }
+
+            // clear() manipule le DOM; si le conteneur n'existe plus, on évite.
+            const regionStillThere = typeof document !== 'undefined' && !!document.getElementById(qrCodeRegionId);
+            if (regionStillThere) {
+                try {
+                    await scannerRef.current.clear();
+                } catch (e) {
+                    // Peut jeter "removeChild" si le DOM a déjà été modifié: on ignore.
+                    console.warn('Clear error (ignored):', e);
+                }
+            }
+        } finally {
+            scannerRef.current = null;
+            isStoppingRef.current = false;
+            if (!opts?.skipStateUpdates && isMountedRef.current) {
+                setIsScanning(false);
+                setError(null);
+            }
+        }
+    };
 
     const startScanning = async () => {
         if (typeof window === 'undefined') return;
@@ -29,15 +66,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 throw new Error('Votre navigateur ne supporte pas l\'accès à la caméra');
             }
 
-            // Dispose of existing scanner if any
-            if (scannerRef.current) {
-                try {
-                    await scannerRef.current.stop();
-                } catch (e) {
-                    console.warn('Error stopping previous scanner:', e);
-                }
-                scannerRef.current = null;
-            }
+            // Dispose of existing scanner if any (safe)
+            await safeStopAndClear({ skipStateUpdates: true });
 
             // Ensure the element exists in DOM
             const element = document.getElementById(qrCodeRegionId);
@@ -65,7 +95,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 config,
                 (decodedText: string) => {
                     onScanSuccess(decodedText);
-                    stopScanning();
+                    safeStopAndClear();
                 },
                 () => { } // Ignore scan errors
             );
@@ -91,48 +121,16 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     };
 
     const stopScanning = async () => {
-        if (scannerRef.current) {
-            try {
-                const state = await scannerRef.current.getState();
-                if (state === 2) { // 2 = SCANNING state
-                    await scannerRef.current.stop();
-                }
-                // Clear the scanner instance
-                await scannerRef.current.clear();
-                scannerRef.current = null;
-            } catch (err) {
-                console.error('Error stopping scanner:', err);
-                // Force cleanup even on error
-                try {
-                    if (scannerRef.current) {
-                        await scannerRef.current.clear();
-                        scannerRef.current = null;
-                    }
-                } catch (e) {
-                    console.error('Force cleanup error:', e);
-                }
-            } finally {
-                setIsScanning(false);
-                setError(null);
-            }
-        }
+        await safeStopAndClear();
     };
 
     useEffect(() => {
+        isMountedRef.current = true;
         return () => {
+            isMountedRef.current = false;
             // Cleanup on unmount
             const cleanup = async () => {
-                if (scannerRef.current) {
-                    try {
-                        const state = await scannerRef.current.getState();
-                        if (state === 2) {
-                            await scannerRef.current.stop();
-                        }
-                        await scannerRef.current.clear();
-                    } catch (e) {
-                        console.error('Cleanup error:', e);
-                    }
-                }
+                await safeStopAndClear({ skipStateUpdates: true });
             };
             cleanup();
         };
